@@ -34,9 +34,11 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true)
   const [categoria, setCategoria] = useState('Todas')
   const [search, setSearch] = useState('')
+  const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
     fetchJobs()
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
   }, [])
 
   const fetchJobs = async () => {
@@ -78,7 +80,14 @@ export default function JobsPage() {
           </Link>
           <div className="nav-links">
             <Link href="/jobs" className="nav-link active">Ver trabajos</Link>
-            <Link href="/login" className="nav-link">Iniciar sesión</Link>
+            {user ? (
+              <Link href="/profile" className="user-pill">
+                <span className="user-avatar">{user.email?.[0].toUpperCase()}</span>
+                <span className="user-email">{user.email}</span>
+              </Link>
+            ) : (
+              <Link href="/login" className="nav-link">Iniciar sesión</Link>
+            )}
             <Link href="/dashboard" className="btn-nav">Publicar trabajo</Link>
           </div>
         </div>
@@ -217,6 +226,24 @@ export default function JobsPage() {
           font-size: 0.85rem; font-weight: 700; transition: background 0.2s;
         }
         .btn-nav:hover { background: #ffd700; }
+        .user-pill {
+          display: flex; align-items: center; gap: 0.5rem;
+          background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.2);
+          border-radius: 999px; padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+          text-decoration: none; transition: background 0.2s;
+        }
+        .user-pill:hover { background: rgba(255,200,0,0.15); }
+        .user-avatar {
+          width: 26px; height: 26px; border-radius: 50%;
+          background: #ffc800; color: #0a0a0f;
+          font-size: 0.75rem; font-weight: 800;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .user-email {
+          font-size: 0.8rem; color: rgba(255,255,255,0.6);
+          max-width: 140px; overflow: hidden;
+          text-overflow: ellipsis; white-space: nowrap;
+        }
 
         /* HEADER */
         .header {
@@ -361,6 +388,7 @@ export default function JobsPage() {
           .header-title { font-size: 1.5rem; }
           .job-bottom { flex-direction: column; align-items: flex-start; }
           .job-budget { text-align: left; }
+          .user-email { display: none; }
         }
       `}</style>
     </div>
