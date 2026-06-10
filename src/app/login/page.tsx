@@ -29,7 +29,7 @@ export default function LoginPage() {
 
       if (authError) throw authError
 
-      router.push('/dashboard')
+      router.push('/jobs')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al iniciar sesión.'
       // Traducir mensajes comunes
@@ -111,7 +111,7 @@ export default function LoginPage() {
           onClick={async () => {
             await supabase.auth.signInWithOAuth({
               provider: 'google',
-              options: { redirectTo: `${window.location.origin}/dashboard` },
+              options: { redirectTo: `${window.location.origin}/jobs` },
             })
           }}
         >
