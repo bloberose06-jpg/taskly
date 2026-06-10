@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createServerSupabase } from "@/lib/supabase/server";
+const supabase = await createServerSupabase();
 import ProfileForm from "@/components/ProfileForm";
 
 export default async function ProfilePage() {
