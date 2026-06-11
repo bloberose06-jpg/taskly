@@ -1,743 +1,392 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from "@/lib/supabase/client";
-import type { JobFormData } from '@/types'
+import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase/client'
+import type { Job } from '@/types'
 
-const CATEGORIAS = [
-  'Diseño gráfico', 
-  'Desarrollo web',
-  'Desarrollo móvil',
-  'Marketing digital',
-  'Redacción y traducción',
-  'Video y animación',
-  'Fotografía',
-  'Contabilidad y finanzas',
-  'Soporte técnico',
-  'Consultoría',
-  'Arquitectura e ingeniería',
-  'Educación y tutorías',
-  'Ventas',
-  'Otro',
-]
-
-const MODALIDADES = ['Remoto', 'Presencial', 'Híbrido']
-const METODOS_PAGO = ['Por hora', 'Por proyecto', 'Por entrega', 'Mensual']
-const MONEDAS = ['GTQ', 'USD', 'MXN']
-
-const EMPTY_FORM: JobFormData = {
-  titulo: '',
-  descripcion: '',
-  categoria: '',
-  ubicacion: '',
-  presupuesto: '',
-  moneda: 'GTQ',
-  metodo_pago: '',
-  modalidad: '',
-  tags: '',
+const MODALIDAD_COLORS: Record<string, string> = {
+  Remoto: '#4ade80',
+  Presencial: '#60a5fa',
+  Híbrido: '#c084fc',
 }
 
-export default function PostJobPage() {
+export default function JobDetailPage() {
+  const params = useParams()
   const router = useRouter()
-  const [form, setForm] = useState<JobFormData>(EMPTY_FORM)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
-  const [step, setStep] = useState(1) // multi-step form
+  const id = params?.id as string
+
+  const [job, setJob] = useState<Job | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<any>(null)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        router.push('/login')
-      } else {
-        setUserId(data.user.id)
-      }
-    })
-  }, [router])
+    if (!id) return
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    fetchJob()
+  }, [id])
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-    setError('')
-  }
-
-  const handleNext = () => {
-    if (step === 1) {
-      if (!form.titulo.trim() || !form.descripcion.trim() || !form.categoria) {
-        setError('Por favor completa todos los campos requeridos.')
-        return
-      }
-    }
-    setError('')
-    setStep(step + 1)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!userId) return
-
-    if (!form.presupuesto || !form.metodo_pago || !form.modalidad) {
-      setError('Por favor completa todos los campos requeridos.')
-      return
-    }
-
+  const fetchJob = async () => {
     setLoading(true)
-    setError('')
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('*')
+      .eq('id', id)
+      .single()
 
-    try {
-      const tagsArray = form.tags
-        ? form.tags.split(',').map((t) => t.trim()).filter(Boolean)
-        : []
-
-      const { error: insertError } = await supabase.from('jobs').insert({
-        titulo: form.titulo.trim(),
-        descripcion: form.descripcion.trim(),
-        categoria: form.categoria,
-        ubicacion: form.ubicacion.trim() || null,
-        presupuesto: parseFloat(form.presupuesto),
-        moneda: form.moneda,
-        metodo_pago: form.metodo_pago,
-        modalidad: form.modalidad,
-        tags: tagsArray.length > 0 ? tagsArray : null,
-        cliente_id: userId,
-        estado: 'abierto',
-        destacado: false,
-      })
-
-      if (insertError) throw insertError
-
-      setSuccess(true)
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al publicar el trabajo.'
-      setError(msg)
-    } finally {
-      setLoading(false)
+    if (error || !data) {
+      setNotFound(true)
+    } else {
+      setJob(data)
     }
+    setLoading(false)
   }
 
-  if (success) {
-    return (
-      <div className="page-wrapper">
-        <div className="success-card">
-          <div className="success-icon">✓</div>
-          <h2>¡Trabajo publicado!</h2>
-          <p>Tu publicación ya está visible para los freelancers.</p>
-          <div className="success-actions">
-            <button
-              className="btn-secondary"
-              onClick={() => { setForm(EMPTY_FORM); setSuccess(false); setStep(1) }}
-            >
-              Publicar otro
-            </button>
-            <button className="btn-primary" onClick={() => router.push('/dashboard')}>
-              Ver dashboard →
-            </button>
-          </div>
-        </div>
-        <Styles />
-      </div>
-    )
+  const timeAgo = (date: string) => {
+    const diff = Date.now() - new Date(date).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 60) return `hace ${mins}m`
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return `hace ${hrs}h`
+    const days = Math.floor(hrs / 24)
+    if (days < 7) return `hace ${days}d`
+    return new Date(date).toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' })
   }
 
   return (
-    <div className="page-wrapper">
-      <div className="page-container">
-        {/* Header */}
-        <div className="page-header">
-          <button className="back-btn" onClick={() => router.back()}>← Volver</button>
-          <div>
-            <h1 className="page-title">Publicar trabajo</h1>
-            <p className="page-sub">Encuentra al freelancer perfecto para tu proyecto</p>
+    <div className="page">
+      {/* NAV */}
+      <nav className="nav">
+        <div className="nav-inner">
+          <Link href="/" className="logo">
+            <span className="logo-icon">⚡</span>
+            <span className="logo-text">TASKLY</span>
+          </Link>
+          <div className="nav-links">
+            <Link href="/jobs" className="nav-link">Ver trabajos</Link>
+            {user ? (
+              <Link href="/profile" className="user-pill">
+                <span className="user-avatar">{user.email?.[0].toUpperCase()}</span>
+                <span className="user-email">{user.email}</span>
+              </Link>
+            ) : (
+              <Link href="/login" className="nav-link">Iniciar sesión</Link>
+            )}
+            <Link href="/dashboard" className="btn-nav">Publicar trabajo</Link>
           </div>
         </div>
+      </nav>
 
-        {/* Progress */}
-        <div className="progress-bar">
-          <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>
-            <span className="step-num">1</span>
-            <span className="step-label">Detalles</span>
-          </div>
-          <div className={`progress-line ${step >= 2 ? 'active' : ''}`} />
-          <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>
-            <span className="step-num">2</span>
-            <span className="step-label">Presupuesto</span>
-          </div>
-        </div>
+      <div className="content">
+        <div className="content-inner">
+          <button className="back-btn" onClick={() => router.back()}>
+            ← Volver a trabajos
+          </button>
 
-        {/* Form Card */}
-        <div className="form-card">
-          {error && (
-            <div className="error-banner">
-              <span>⚠</span> {error}
+          {loading ? (
+            <div className="skeleton-wrap">
+              <div className="skeleton sk-title" />
+              <div className="skeleton sk-meta" />
+              <div className="skeleton sk-body" />
+              <div className="skeleton sk-body short" />
             </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {/* STEP 1 */}
-            {step === 1 && (
-              <div className="form-step">
-                <div className="field">
-                  <label htmlFor="titulo">Título del trabajo *</label>
-                  <input
-                    id="titulo"
-                    name="titulo"
-                    type="text"
-                    required
-                    placeholder="Ej: Diseñador web para landing page de e-commerce"
-                    value={form.titulo}
-                    onChange={handleChange}
-                    maxLength={120}
-                  />
-                  <span className="field-hint">{form.titulo.length}/120 caracteres</span>
-                </div>
-
-                <div className="field">
-                  <label htmlFor="descripcion">Descripción *</label>
-                  <textarea
-                    id="descripcion"
-                    name="descripcion"
-                    required
-                    rows={5}
-                    placeholder="Describe el trabajo, requisitos, entregables esperados, plazos..."
-                    value={form.descripcion}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="field-row">
-                  <div className="field">
-                    <label htmlFor="categoria">Categoría *</label>
-                    <select id="categoria" name="categoria" required value={form.categoria} onChange={handleChange}>
-                      <option value="">Selecciona una categoría</option>
-                      {CATEGORIAS.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+          ) : notFound ? (
+            <div className="not-found">
+              <div className="nf-icon">📭</div>
+              <h2>Trabajo no encontrado</h2>
+              <p>Este trabajo ya no está disponible o fue eliminado.</p>
+              <Link href="/jobs" className="btn-primary">Ver todos los trabajos →</Link>
+            </div>
+          ) : job ? (
+            <div className="job-layout">
+              {/* MAIN */}
+              <div className="job-main">
+                <div className="job-card">
+                  <div className="job-top">
+                    <span className="job-cat">{job.categoria}</span>
+                    <span className="job-time">{timeAgo(job.created_at)}</span>
                   </div>
-                  <div className="field">
-                    <label htmlFor="modalidad">Modalidad *</label>
-                    <select id="modalidad" name="modalidad" required value={form.modalidad} onChange={handleChange}>
-                      <option value="">Selecciona modalidad</option>
-                      {MODALIDADES.map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
+
+                  <h1 className="job-title">{job.titulo}</h1>
+
+                  <div className="job-tags-row">
+                    <span
+                      className="tag-modalidad"
+                      style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}
+                    >
+                      ● {job.modalidad}
+                    </span>
+                    {job.ubicacion && (
+                      <span className="tag-loc">📍 {job.ubicacion}</span>
+                    )}
                   </div>
-                </div>
 
-                <div className="field">
-                  <label htmlFor="ubicacion">Ubicación <span className="optional">(opcional)</span></label>
-                  <input
-                    id="ubicacion"
-                    name="ubicacion"
-                    type="text"
-                    placeholder="Ej: Ciudad de Guatemala, Guatemala"
-                    value={form.ubicacion}
-                    onChange={handleChange}
-                  />
-                </div>
+                  <div className="divider" />
 
-                <div className="field">
-                  <label htmlFor="tags">
-                    Tags / Habilidades <span className="optional">(opcional)</span>
-                  </label>
-                  <input
-                    id="tags"
-                    name="tags"
-                    type="text"
-                    placeholder="Ej: React, Figma, SEO (separados por comas)"
-                    value={form.tags}
-                    onChange={handleChange}
-                  />
-                </div>
+                  <div className="section">
+                    <h2 className="section-title">Descripción del trabajo</h2>
+                    <p className="job-desc">{job.descripcion}</p>
+                  </div>
 
-                <div className="form-actions">
-                  <button type="button" className="btn-primary" onClick={handleNext}>
-                    Continuar →
-                  </button>
+                  {job.tags && job.tags.length > 0 && (
+                    <>
+                      <div className="divider" />
+                      <div className="section">
+                        <h2 className="section-title">Habilidades requeridas</h2>
+                        <div className="skills-list">
+                          {job.tags.map((t) => (
+                            <span key={t} className="skill-tag">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
-            )}
 
-            {/* STEP 2 */}
-            {step === 2 && (
-              <div className="form-step">
-                <div className="budget-section">
-                  <h3 className="section-title">💰 Presupuesto</h3>
-                  <div className="field-row">
-                    <div className="field" style={{ flex: 2 }}>
-                      <label htmlFor="presupuesto">Monto *</label>
-                      <input
-                        id="presupuesto"
-                        name="presupuesto"
-                        type="number"
-                        required
-                        min="1"
-                        step="0.01"
-                        placeholder="500"
-                        value={form.presupuesto}
-                        onChange={handleChange}
-                      />
-                    </div>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label htmlFor="moneda">Moneda</label>
-                      <select id="moneda" name="moneda" value={form.moneda} onChange={handleChange}>
-                        {MONEDAS.map((m) => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </select>
-                    </div>
+              {/* SIDEBAR */}
+              <div className="job-sidebar">
+                <div className="side-card budget-card">
+                  <div className="budget-amount">
+                    {job.moneda} {Number(job.presupuesto).toLocaleString('es-GT')}
                   </div>
-
-                  <div className="field">
-                    <label htmlFor="metodo_pago">Método de pago *</label>
-                    <div className="radio-group">
-                      {METODOS_PAGO.map((m) => (
-                        <label key={m} className={`radio-card ${form.metodo_pago === m ? 'selected' : ''}`}>
-                          <input
-                            type="radio"
-                            name="metodo_pago"
-                            value={m}
-                            checked={form.metodo_pago === m}
-                            onChange={handleChange}
-                          />
-                          {m}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Summary */}
-                <div className="summary-card">
-                  <h3 className="section-title">📋 Resumen</h3>
-                  <div className="summary-item">
-                    <span>Título</span>
-                    <strong>{form.titulo || '—'}</strong>
-                  </div>
-                  <div className="summary-item">
-                    <span>Categoría</span>
-                    <strong>{form.categoria || '—'}</strong>
-                  </div>
-                  <div className="summary-item">
-                    <span>Modalidad</span>
-                    <strong>{form.modalidad || '—'}</strong>
-                  </div>
-                  {form.presupuesto && (
-                    <div className="summary-item highlight">
-                      <span>Presupuesto</span>
-                      <strong>{form.moneda} {parseFloat(form.presupuesto).toLocaleString()}</strong>
-                    </div>
+                  <div className="budget-method">{job.metodo_pago}</div>
+                  {user ? (
+                    <button className="btn-apply">
+                      Aplicar a este trabajo →
+                    </button>
+                  ) : (
+                    <Link href="/login" className="btn-apply">
+                      Inicia sesión para aplicar →
+                    </Link>
                   )}
                 </div>
 
-                <div className="form-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setStep(1)}>
-                    ← Atrás
-                  </button>
-                  <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? <span className="spinner" /> : '⚡ Publicar trabajo'}
-                  </button>
+                <div className="side-card info-card">
+                  <h3 className="info-title">Detalles</h3>
+                  <div className="info-list">
+                    <div className="info-row">
+                      <span className="info-label">Categoría</span>
+                      <span className="info-value">{job.categoria}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="info-label">Modalidad</span>
+                      <span
+                        className="info-value"
+                        style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}
+                      >
+                        {job.modalidad}
+                      </span>
+                    </div>
+                    {job.ubicacion && (
+                      <div className="info-row">
+                        <span className="info-label">Ubicación</span>
+                        <span className="info-value">{job.ubicacion}</span>
+                      </div>
+                    )}
+                    <div className="info-row">
+                      <span className="info-label">Pago</span>
+                      <span className="info-value">{job.metodo_pago}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="info-label">Publicado</span>
+                      <span className="info-value">{timeAgo(job.created_at)}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </form>
+            </div>
+          ) : null}
         </div>
       </div>
 
-      <Styles />
+      <style jsx>{`
+        * { box-sizing: border-box; }
+        .page {
+          min-height: 100vh;
+          background: #0a0a0f;
+          color: #fff;
+          font-family: 'DM Sans', 'Segoe UI', sans-serif;
+        }
+        .nav {
+          position: sticky; top: 0; z-index: 100;
+          background: rgba(10,10,15,0.9);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .nav-inner {
+          max-width: 1100px; margin: 0 auto;
+          padding: 1rem 1.5rem;
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .logo { display: flex; align-items: center; gap: 0.4rem; text-decoration: none; }
+        .logo-icon { font-size: 1.4rem; }
+        .logo-text { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.15em; color: #ffc800; }
+        .nav-links { display: flex; align-items: center; gap: 1.5rem; }
+        .nav-link { color: rgba(255,255,255,0.45); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-link:hover { color: #fff; }
+        .btn-nav {
+          background: #ffc800; color: #0a0a0f; text-decoration: none;
+          border-radius: 8px; padding: 0.5rem 1rem;
+          font-size: 0.85rem; font-weight: 700; transition: background 0.2s;
+        }
+        .btn-nav:hover { background: #ffd700; }
+        .user-pill {
+          display: flex; align-items: center; gap: 0.5rem;
+          background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.2);
+          border-radius: 999px; padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+          text-decoration: none; transition: background 0.2s;
+        }
+        .user-pill:hover { background: rgba(255,200,0,0.15); }
+        .user-avatar {
+          width: 26px; height: 26px; border-radius: 50%;
+          background: #ffc800; color: #0a0a0f;
+          font-size: 0.75rem; font-weight: 800;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .user-email {
+          font-size: 0.8rem; color: rgba(255,255,255,0.6);
+          max-width: 140px; overflow: hidden;
+          text-overflow: ellipsis; white-space: nowrap;
+        }
+        .content { padding: 2rem 1.5rem 5rem; }
+        .content-inner { max-width: 1100px; margin: 0 auto; }
+        .back-btn {
+          background: none; border: none; color: rgba(255,255,255,0.4);
+          font-size: 0.85rem; cursor: pointer; padding: 0;
+          font-family: inherit; transition: color 0.2s;
+          margin-bottom: 1.75rem; display: block;
+        }
+        .back-btn:hover { color: #fff; }
+        .job-layout {
+          display: grid;
+          grid-template-columns: 1fr 320px;
+          gap: 1.5rem;
+          align-items: start;
+        }
+        .job-card {
+          background: #13131a;
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 20px;
+          padding: 2rem;
+        }
+        .job-top {
+          display: flex; align-items: center; justify-content: space-between;
+          margin-bottom: 0.85rem;
+        }
+        .job-cat {
+          font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.08em; color: rgba(255,200,0,0.7);
+        }
+        .job-time { font-size: 0.75rem; color: rgba(255,255,255,0.25); }
+        .job-title {
+          font-size: 1.6rem; font-weight: 800; color: #fff;
+          margin: 0 0 1rem; line-height: 1.25; letter-spacing: -0.02em;
+        }
+        .job-tags-row {
+          display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+          margin-bottom: 0.25rem;
+        }
+        .tag-modalidad { font-size: 0.82rem; font-weight: 600; }
+        .tag-loc { font-size: 0.82rem; color: rgba(255,255,255,0.35); }
+        .divider {
+          height: 1px; background: rgba(255,255,255,0.05);
+          margin: 1.5rem 0;
+        }
+        .section-title {
+          font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.08em; color: rgba(255,255,255,0.35);
+          margin: 0 0 0.85rem;
+        }
+        .job-desc {
+          font-size: 0.95rem; color: rgba(255,255,255,0.65);
+          line-height: 1.75; margin: 0; white-space: pre-wrap;
+        }
+        .skills-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .skill-tag {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 8px; padding: 0.3rem 0.75rem;
+          font-size: 0.8rem; color: rgba(255,255,255,0.5);
+        }
+        .job-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+        .side-card {
+          background: #13131a;
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 16px;
+          padding: 1.5rem;
+        }
+        .budget-card { text-align: center; }
+        .budget-amount {
+          font-size: 2rem; font-weight: 900; color: #ffc800;
+          line-height: 1; margin-bottom: 0.3rem;
+        }
+        .budget-method {
+          font-size: 0.8rem; color: rgba(255,255,255,0.3);
+          margin-bottom: 1.5rem;
+        }
+        .btn-apply {
+          display: block; width: 100%;
+          background: #ffc800; color: #0a0a0f;
+          border: none; border-radius: 10px;
+          padding: 0.85rem 1rem; font-size: 0.9rem; font-weight: 700;
+          font-family: inherit; cursor: pointer;
+          text-decoration: none; text-align: center;
+          transition: background 0.2s, transform 0.15s;
+        }
+        .btn-apply:hover { background: #ffd700; transform: translateY(-1px); }
+        .info-title {
+          font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.08em; color: rgba(255,255,255,0.3);
+          margin: 0 0 1rem;
+        }
+        .info-list { display: flex; flex-direction: column; gap: 0; }
+        .info-row {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 0.6rem 0;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+          font-size: 0.85rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: rgba(255,255,255,0.35); }
+        .info-value { color: rgba(255,255,255,0.75); font-weight: 500; text-align: right; max-width: 60%; }
+        .skeleton-wrap { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+        .skeleton {
+          background: #13131a; border-radius: 12px;
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+        .sk-title { height: 48px; max-width: 500px; }
+        .sk-meta { height: 24px; max-width: 300px; }
+        .sk-body { height: 120px; }
+        .sk-body.short { height: 60px; max-width: 60%; }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+        .not-found { text-align: center; padding: 6rem 1rem; }
+        .nf-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .not-found h2 { font-size: 1.3rem; font-weight: 700; margin: 0 0 0.5rem; }
+        .not-found p { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0 0 1.5rem; }
+        .btn-primary {
+          background: #ffc800; color: #0a0a0f; text-decoration: none;
+          border-radius: 10px; padding: 0.75rem 1.5rem;
+          font-size: 0.9rem; font-weight: 700; display: inline-block;
+          transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #ffd700; }
+        @media (max-width: 800px) {
+          .job-layout { grid-template-columns: 1fr; }
+          .job-sidebar { order: -1; }
+          .budget-card { text-align: left; }
+          .budget-amount { font-size: 1.5rem; }
+        }
+        @media (max-width: 640px) {
+          .nav-link { display: none; }
+          .user-email { display: none; }
+          .job-title { font-size: 1.25rem; }
+          .job-card { padding: 1.25rem; }
+          .side-card { padding: 1.25rem; }
+        }
+      `}</style>
     </div>
-  )
-}
-
-function Styles() {
-  return (
-    <style jsx global>{`
-      * { box-sizing: border-box; }
-
-      .page-wrapper {
-        min-height: 100vh;
-        background: #0a0a0f;
-        background-image: radial-gradient(ellipse at 10% 30%, rgba(255, 200, 0, 0.05) 0%, transparent 50%);
-        padding: 2rem 1rem 4rem;
-        font-family: 'DM Sans', 'Segoe UI', sans-serif;
-        color: rgba(255,255,255,0.9);
-      }
-
-      .page-container {
-        max-width: 680px;
-        margin: 0 auto;
-      }
-
-      .page-header {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
-
-      .back-btn {
-        background: none;
-        border: 1px solid rgba(255,255,255,0.1);
-        color: rgba(255,255,255,0.5);
-        padding: 0.5rem 0.85rem;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        font-family: inherit;
-        white-space: nowrap;
-        transition: border-color 0.2s, color 0.2s;
-        margin-top: 4px;
-      }
-
-      .back-btn:hover { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.8); }
-
-      .page-title {
-        font-size: 1.7rem;
-        font-weight: 800;
-        margin: 0;
-        letter-spacing: -0.02em;
-      }
-
-      .page-sub {
-        font-size: 0.85rem;
-        color: rgba(255,255,255,0.35);
-        margin: 0.2rem 0 0;
-      }
-
-      /* Progress */
-      .progress-bar {
-        display: flex;
-        align-items: center;
-        margin-bottom: 2rem;
-      }
-
-      .progress-step {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        opacity: 0.35;
-        transition: opacity 0.3s;
-      }
-
-      .progress-step.active { opacity: 1; }
-
-      .step-num {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: #1a1a24;
-        border: 2px solid rgba(255,255,255,0.15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        font-weight: 700;
-      }
-
-      .progress-step.active .step-num {
-        background: #ffc800;
-        border-color: #ffc800;
-        color: #0a0a0f;
-      }
-
-      .step-label {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: rgba(255,255,255,0.7);
-      }
-
-      .progress-line {
-        flex: 1;
-        height: 2px;
-        background: rgba(255,255,255,0.08);
-        margin: 0 1rem;
-        transition: background 0.3s;
-      }
-
-      .progress-line.active { background: #ffc800; }
-
-      /* Form card */
-      .form-card {
-        background: #13131a;
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 20px;
-        padding: 2rem;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-      }
-
-      .error-banner {
-        background: rgba(255,60,60,0.1);
-        border: 1px solid rgba(255,60,60,0.3);
-        color: #ff6b6b;
-        border-radius: 10px;
-        padding: 0.75rem 1rem;
-        font-size: 0.85rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .form-step {
-        display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
-      }
-
-      .field {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-      }
-
-      .field > label {
-        font-size: 0.78rem;
-        font-weight: 600;
-        color: rgba(255,255,255,0.45);
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-      }
-
-      .optional {
-        font-weight: 400;
-        opacity: 0.6;
-        text-transform: none;
-        letter-spacing: 0;
-      }
-
-      .field-hint {
-        font-size: 0.72rem;
-        color: rgba(255,255,255,0.25);
-        text-align: right;
-      }
-
-      .field input,
-      .field textarea,
-      .field select {
-        background: #1a1a24;
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 10px;
-        padding: 0.75rem 0.9rem;
-        color: rgba(255,255,255,0.9);
-        font-size: 0.9rem;
-        font-family: inherit;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        outline: none;
-        width: 100%;
-        resize: vertical;
-      }
-
-      .field input::placeholder,
-      .field textarea::placeholder { color: rgba(255,255,255,0.2); }
-
-      .field input:focus,
-      .field textarea:focus,
-      .field select:focus {
-        border-color: rgba(255,200,0,0.5);
-        box-shadow: 0 0 0 3px rgba(255,200,0,0.07);
-      }
-
-      .field select {
-        cursor: pointer;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 0.9rem center;
-        padding-right: 2.5rem;
-      }
-
-      .field select option { background: #1a1a24; }
-
-      .field-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-      }
-
-      /* Radio group */
-      .radio-group {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.6rem;
-        margin-top: 0.2rem;
-      }
-
-      .radio-card {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.65rem 0.75rem;
-        background: #1a1a24;
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 10px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: border-color 0.2s, background 0.2s;
-        gap: 0.5rem;
-      }
-
-      .radio-card input { display: none; }
-
-      .radio-card.selected {
-        border-color: #ffc800;
-        background: rgba(255,200,0,0.08);
-        color: #ffc800;
-        font-weight: 600;
-      }
-
-      /* Summary */
-      .summary-card {
-        background: #1a1a24;
-        border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 14px;
-        padding: 1.25rem;
-      }
-
-      .section-title {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: rgba(255,255,255,0.6);
-        margin: 0 0 1rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-      }
-
-      .budget-section .section-title { margin-bottom: 1.25rem; }
-
-      .summary-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid rgba(255,255,255,0.04);
-        font-size: 0.88rem;
-      }
-
-      .summary-item:last-child { border-bottom: none; }
-
-      .summary-item span { color: rgba(255,255,255,0.4); }
-      .summary-item strong { color: rgba(255,255,255,0.85); font-size: 0.9rem; }
-
-      .summary-item.highlight strong {
-        color: #ffc800;
-        font-size: 1rem;
-      }
-
-      /* Actions */
-      .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        margin-top: 0.5rem;
-      }
-
-      .btn-primary {
-        background: #ffc800;
-        color: #0a0a0f;
-        border: none;
-        border-radius: 10px;
-        padding: 0.8rem 1.5rem;
-        font-size: 0.9rem;
-        font-weight: 700;
-        font-family: inherit;
-        cursor: pointer;
-        transition: background 0.2s, transform 0.1s;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        min-height: 44px;
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        background: #ffd700;
-        transform: translateY(-1px);
-      }
-
-      .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-      .btn-secondary {
-        background: transparent;
-        border: 1px solid rgba(255,255,255,0.12);
-        color: rgba(255,255,255,0.6);
-        border-radius: 10px;
-        padding: 0.8rem 1.25rem;
-        font-size: 0.9rem;
-        font-family: inherit;
-        cursor: pointer;
-        transition: border-color 0.2s;
-      }
-
-      .btn-secondary:hover { border-color: rgba(255,255,255,0.3); }
-
-      .spinner {
-        width: 16px;
-        height: 16px;
-        border: 2px solid rgba(0,0,0,0.2);
-        border-top-color: #0a0a0f;
-        border-radius: 50%;
-        animation: spin 0.7s linear infinite;
-        display: inline-block;
-      }
-
-      @keyframes spin { to { transform: rotate(360deg); } }
-
-      /* Success */
-      .success-card {
-        max-width: 440px;
-        margin: 10vh auto 0;
-        background: #13131a;
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 20px;
-        padding: 3rem 2.5rem;
-        text-align: center;
-        box-shadow: 0 25px 60px rgba(0,0,0,0.5);
-      }
-
-      .success-icon {
-        width: 72px;
-        height: 72px;
-        background: rgba(74, 222, 128, 0.12);
-        border: 2px solid rgba(74, 222, 128, 0.4);
-        color: #4ade80;
-        border-radius: 50%;
-        font-size: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-      }
-
-      .success-card h2 {
-        font-size: 1.5rem;
-        font-weight: 800;
-        margin: 0 0 0.5rem;
-      }
-
-      .success-card p {
-        color: rgba(255,255,255,0.4);
-        font-size: 0.9rem;
-        margin: 0 0 2rem;
-      }
-
-      .success-actions {
-        display: flex;
-        gap: 0.75rem;
-        justify-content: center;
-      }
-
-      @media (max-width: 520px) {
-        .field-row { grid-template-columns: 1fr; }
-        .radio-group { grid-template-columns: 1fr 1fr; }
-        .form-card { padding: 1.5rem 1.25rem; }
-        .success-actions { flex-direction: column; }
-      }
-    `}</style>
   )
 }
