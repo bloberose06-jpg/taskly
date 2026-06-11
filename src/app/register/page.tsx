@@ -42,7 +42,7 @@ export default function RegisterPage() {
     if (error) {
       setError(error.message);
     } else {
-      router.push("/dashboard");
+      router.push("/jobs");
     }
   };
 
