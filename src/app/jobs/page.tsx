@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import type { Job } from '@/types'
+import NotificationBell from '@/components/NotificationBell'
+
 
 const CATEGORIAS = [
   'Todas',
@@ -89,6 +91,8 @@ export default function JobsPage() {
               <Link href="/login" className="nav-link">Iniciar sesión</Link>
             )}
             <Link href="/dashboard" className="btn-nav">Publicar trabajo</Link>
+            // dentro del nav:
+            <NotificationBell />
           </div>
         </div>
       </nav>
