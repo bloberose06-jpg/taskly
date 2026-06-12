@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from "@/lib/supabase/client";
 import type { JobFormData } from '@/types'
+import NotificationBell from '@/components/NotificationBell'
+// dentro del nav:
+<NotificationBell />
 
 const CATEGORIAS = [
   'Diseño gráfico',
