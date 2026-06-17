@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { UploadDropzone } from "@/lib/uploadthing";
+import { supabase } from "@/lib/supabase/client";
 
 interface JobImageUploadProps {
   value: string[]; // URLs actuales de las imágenes
@@ -55,6 +56,12 @@ export default function JobImageUpload({
       {value.length < maxImages && (
         <UploadDropzone
           endpoint="jobImageUploader"
+          headers={async () => {
+            const { data } = await supabase.auth.getSession();
+            return {
+              authorization: `Bearer ${data.session?.access_token ?? ""}`,
+            };
+          }}
           onUploadBegin={() => setIsUploading(true)}
           onClientUploadComplete={(res) => {
             setIsUploading(false);
