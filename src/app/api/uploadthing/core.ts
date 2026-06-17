@@ -1,6 +1,6 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
-import { createClient } from "@/lib/supabase/server";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 const f = createUploadthing();
 
@@ -12,7 +12,7 @@ export const ourFileRouter = {
     },
   })
     .middleware(async () => {
-      const supabase = await createClient();
+      const supabase = await createServerSupabase();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new UploadThingError("No autorizado");
       return { userId: user.id };
