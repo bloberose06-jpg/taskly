@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from "@/lib/supabase/client";
 import type { JobFormData } from '@/types'
 import NotificationBell from '@/components/NotificationBell'
-// dentro del nav:
-<NotificationBell />
+import JobImageUpload from '@/components/JobImageUpload'
 
 const CATEGORIAS = [
   'Diseño gráfico',
@@ -49,6 +48,7 @@ export default function PostJobPage() {
   const [success, setSuccess] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [step, setStep] = useState(1) // multi-step form
+  const [images, setImages] = useState<string[]>([])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -107,7 +107,8 @@ export default function PostJobPage() {
         tags: tagsArray.length > 0 ? tagsArray : null,
         cliente_id: userId,
         estado: 'abierto',
-        destacado: false,
+          images: images,
+          destacado: false,
       })
 
       if (insertError) throw insertError
@@ -132,7 +133,7 @@ export default function PostJobPage() {
           <div className="success-actions">
             <button
               className="btn-secondary"
-              onClick={() => { setForm(EMPTY_FORM); setSuccess(false); setStep(1) }}
+              onClick={() => { setForm(EMPTY_FORM); setImages([]); setSuccess(false); setStep(1) }}
             >
               Publicar otro
             </button>
@@ -256,6 +257,11 @@ export default function PostJobPage() {
                     value={form.tags}
                     onChange={handleChange}
                   />
+                </div>
+
+                <div className="field">
+                  <label>Fotos del trabajo <span className="optional">(opcional, hasta 4)</span></label>
+                  <JobImageUpload value={images} onChange={setImages} maxImages={4} />
                 </div>
 
                 <div className="form-actions">

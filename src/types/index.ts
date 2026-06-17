@@ -21,6 +21,7 @@ export type Job = {
   metodo_pago: string
   modalidad: string
   tags: string[] | null
+  images: string[] | null
   user_id: string
   created_at: string
 }
