@@ -109,6 +109,14 @@ export default function JobDetailPage() {
                     <span className="job-time">{timeAgo(job.created_at)}</span>
                   </div>
 
+                    {job.images && job.images.length > 0 && (
+                      <div className="job-gallery">
+                        {job.images.map((url, i) => (
+                          <img key={url} src={url} alt={`${job.titulo} - foto ${i + 1}`} className="gallery-img" />
+                        ))}
+                      </div>
+                    )}
+
                   <h1 className="job-title">{job.titulo}</h1>
 
                   <div className="job-tags-row">
@@ -284,6 +292,20 @@ export default function JobDetailPage() {
         .job-title {
           font-size: 1.6rem; font-weight: 800; color: #fff;
           margin: 0 0 1rem; line-height: 1.25; letter-spacing: -0.02em;
+        }
+        .job-gallery {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+          gap: 0.6rem;
+          margin-bottom: 1rem;
+        }
+        .gallery-img {
+          width: 100%;
+          aspect-ratio: 4 / 3;
+          object-fit: cover;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.07);
+          display: block;
         }
         .job-tags-row {
           display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;

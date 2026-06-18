@@ -158,6 +158,14 @@ export default function JobsPage() {
             <div className="jobs-grid">
               {filtered.map((job) => (
                 <Link href={`/jobs/${job.id}`} key={job.id} className="job-card">
+                  {job.images && job.images.length > 0 && (
+                    <div className="job-image-wrap">
+                      <img src={job.images[0]} alt={job.titulo} className="job-image" />
+                      {job.images.length > 1 && (
+                        <span className="job-image-count">+{job.images.length - 1}</span>
+                      )}
+                    </div>
+                  )}
                   <div className="job-top">
                     <span className="job-cat">{job.categoria}</span>
                     <span className="job-time">{timeAgo(job.created_at)}</span>
@@ -324,6 +332,33 @@ export default function JobsPage() {
           border-color: rgba(255,200,0,0.25);
           background: #16161f;
           transform: translateY(-1px);
+        }
+        .job-image-wrap {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          border-radius: 12px;
+          overflow: hidden;
+          margin-bottom: 1rem;
+          background: #1a1a24;
+        }
+        .job-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .job-image-count {
+          position: absolute;
+          bottom: 0.5rem;
+          right: 0.5rem;
+          background: rgba(0,0,0,0.65);
+          color: #fff;
+          font-size: 0.72rem;
+          font-weight: 600;
+          padding: 0.2rem 0.5rem;
+          border-radius: 6px;
+          border-radius: 6px;
         }
         .job-top {
           display: flex; align-items: center; justify-content: space-between;
