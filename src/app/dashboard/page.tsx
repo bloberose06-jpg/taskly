@@ -137,7 +137,7 @@ export default function PostJobPage() {
             >
               Publicar otro
             </button>
-            <button className="btn-primary" onClick={() => router.push('/dashboard')}>
+            <button className="btn-primary" onClick={() => router.push('/jobs')}>
               Ver dashboard →
             </button>
           </div>
