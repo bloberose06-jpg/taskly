@@ -438,9 +438,23 @@ export default function JobsPage() {
         /* RESPONSIVE MEDIA QUERIES */
         @media (min-width: 641px) {
           .job-card {
-            flex-direction: row;
-            align-items: flex-start;
-          }
+          background: #13131a; 
+          /* Cambiamos el borde completo por uno solo en la parte inferior, más limpio */
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 0px; /* Al ser una lista continua con separador lineal, se ve mejor sin esquinas redondeadas */
+          padding: 2rem 1rem; /* Más espacio arriba y abajo para que respire */
+          text-decoration: none; 
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+          transition: background 0.2s, border-color 0.2s;
+        }
+
+        .job-card:hover {
+          background: #16161f;
+          /* Al pasar el mouse, iluminamos un poco el separador para dar feedback visual */
+          border-bottom-color: rgba(255, 200, 0, 0.3);
+        }
           .job-image-wrap {
             width: 250px; /* Tamaño controlado de la imagen de lado */
             margin-bottom: 0;
