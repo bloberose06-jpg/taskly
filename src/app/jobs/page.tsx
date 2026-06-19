@@ -324,26 +324,28 @@ export default function JobsPage() {
         }
         .btn-post:hover { background: rgba(255,200,0,0.08); }
 
-        /* JOB CARDS GRID & FLEX LAYOUT */
+        /* JOB CARDS GRID (ESTILO DE CAJAS SEPARADAS) */
         .jobs-grid { 
           display: flex; 
           flex-direction: column; 
-          gap: 0px; 
+          gap: 1.25rem; /* Espaciado real y claro entre tarjetas */
         }
         
         .job-card {
-          background: #0a0a0f; 
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 2.25rem 1rem;
+          background: #14141f; /* Tono grisáceo más claro que el fondo general de la página */
+          border: 1px solid rgba(255, 255, 255, 0.06); /* Borde completo sutil */
+          border-radius: 14px; /* Bordes redondeados modernos */
+          padding: 1.5rem;
           text-decoration: none; 
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
-          transition: background 0.2s, border-color 0.2s;
+          gap: 1.25rem;
+          transition: background 0.2s, border-color 0.2s, transform 0.15s;
         }
         .job-card:hover {
-          background: #111118;
-          border-bottom-color: rgba(255, 200, 0, 0.3);
+          background: #191926;
+          border-color: rgba(255, 200, 0, 0.25);
+          transform: translateY(-2px); /* Pequeña elevación visual */
         }
         
         .job-content-wrap {
@@ -357,9 +359,9 @@ export default function JobsPage() {
           position: relative;
           width: 100%;
           aspect-ratio: 16 / 9;
-          border-radius: 12px;
+          border-radius: 10px;
           overflow: hidden;
-          background: #1a1a24;
+          background: #1f1f2e;
           flex-shrink: 0;
         }
         .job-image {
@@ -381,20 +383,20 @@ export default function JobsPage() {
         }
         .job-top {
           display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 0.75rem;
+          margin-bottom: 0.5rem;
         }
         .job-cat {
           font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.08em; color: rgba(255,200,0,0.7);
+          letter-spacing: 0.08em; color: rgba(255,200,0,0.85);
         }
-        .job-time { font-size: 0.75rem; color: rgba(255,255,255,0.25); }
+        .job-time { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
         .job-title {
-          font-size: 1.15rem; font-weight: 700; color: #fff;
-          margin: 0 0 0.6rem; line-height: 1.35;
+          font-size: 1.2rem; font-weight: 700; color: #fff;
+          margin: 0 0 0.5rem; line-height: 1.35;
         }
         .job-desc {
           font-size: 0.88rem; color: rgba(255,255,255,0.45); line-height: 1.6;
-          margin: 0 0 1.25rem;
+          margin: 0 0 1rem;
           display: -webkit-box; -webkit-line-clamp: 2;
           -webkit-box-orient: vertical; overflow: hidden;
         }
@@ -402,12 +404,14 @@ export default function JobsPage() {
           display: flex; align-items: center; justify-content: space-between;
           flex-wrap: wrap; gap: 0.75rem;
           margin-top: auto;
+          border-top: 1px solid rgba(255, 255, 255, 0.04);
+          padding-top: 0.75rem;
         }
         .job-tags { display: flex; align-items: center; gap: 1rem; }
         .tag-modalidad { font-size: 0.78rem; font-weight: 600; }
         .tag-loc { font-size: 0.78rem; color: rgba(255,255,255,0.35); }
         .job-budget { text-align: right; }
-        .budget-amount { font-size: 1.1rem; font-weight: 800; color: #ffc800; display: block; }
+        .budget-amount { font-size: 1.15rem; font-weight: 800; color: #ffc800; display: block; }
         .budget-method { font-size: 0.72rem; color: rgba(255,255,255,0.3); }
         .job-skills { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.85rem; }
         .skill-tag {
@@ -446,12 +450,13 @@ export default function JobsPage() {
         @media (min-width: 768px) {
           .job-card {
             flex-direction: row;
-            align-items: flex-start;
-            gap: 2rem;
+            align-items: stretch; /* Estira el contenedor para alineación perfecta */
+            gap: 1.75rem;
           }
           .job-image-wrap {
-            width: 240px;
-            max-width: 240px;
+            width: 250px;
+            max-width: 250px;
+            aspect-ratio: 16 / 11; /* Controla la proporción de la imagen lateral */
           }
         }
 
