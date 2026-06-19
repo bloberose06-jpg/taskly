@@ -157,6 +157,7 @@ export default function JobsPage() {
             <div className="jobs-grid">
               {filtered.map((job) => (
                 <Link href={`/jobs/${job.id}`} key={job.id} className="job-card">
+                  {/* Contenedor de la Imagen */}
                   {job.images && job.images.length > 0 && (
                     <div className="job-image-wrap">
                       <img src={job.images[0]} alt={job.titulo} className="job-image" />
@@ -166,7 +167,7 @@ export default function JobsPage() {
                     </div>
                   )}
                   
-                  {/* Contenedor wrapper para agrupar los textos a la par de la imagen */}
+                  {/* Contenedor Wrapper de Contenido */}
                   <div className="job-content-wrap">
                     <div className="job-top">
                       <span className="job-cat">{job.categoria}</span>
@@ -323,28 +324,33 @@ export default function JobsPage() {
         }
         .btn-post:hover { background: rgba(255,200,0,0.08); }
 
-        /* JOB CARDS */
-        .jobs-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+        /* JOB CARDS GRID & FLEX LAYOUT */
+        .jobs-grid { 
+          display: flex; 
+          flex-direction: column; 
+          gap: 0px; 
+        }
         
         .job-card {
-          background: #13131a; border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 16px; padding: 1.5rem;
+          background: #0a0a0f; 
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 2.25rem 1rem;
           text-decoration: none; 
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
-          transition: border-color 0.2s, transform 0.15s, background 0.2s;
+          gap: 1.5rem;
+          transition: background 0.2s, border-color 0.2s;
         }
         .job-card:hover {
-          border-color: rgba(255,200,0,0.25);
-          background: #16161f;
-          transform: translateY(-1px);
+          background: #111118;
+          border-bottom-color: rgba(255, 200, 0, 0.3);
         }
         
         .job-content-wrap {
           flex: 1;
           display: flex;
           flex-direction: column;
+          width: 100%;
         }
 
         .job-image-wrap {
@@ -383,24 +389,25 @@ export default function JobsPage() {
         }
         .job-time { font-size: 0.75rem; color: rgba(255,255,255,0.25); }
         .job-title {
-          font-size: 1.05rem; font-weight: 700; color: #fff;
+          font-size: 1.15rem; font-weight: 700; color: #fff;
           margin: 0 0 0.6rem; line-height: 1.35;
         }
         .job-desc {
-          font-size: 0.85rem; color: rgba(255,255,255,0.4); line-height: 1.6;
-          margin: 0 0 1rem;
+          font-size: 0.88rem; color: rgba(255,255,255,0.45); line-height: 1.6;
+          margin: 0 0 1.25rem;
           display: -webkit-box; -webkit-line-clamp: 2;
           -webkit-box-orient: vertical; overflow: hidden;
         }
         .job-bottom {
           display: flex; align-items: center; justify-content: space-between;
           flex-wrap: wrap; gap: 0.75rem;
+          margin-top: auto;
         }
         .job-tags { display: flex; align-items: center; gap: 1rem; }
         .tag-modalidad { font-size: 0.78rem; font-weight: 600; }
         .tag-loc { font-size: 0.78rem; color: rgba(255,255,255,0.35); }
         .job-budget { text-align: right; }
-        .budget-amount { font-size: 1rem; font-weight: 800; color: #ffc800; display: block; }
+        .budget-amount { font-size: 1.1rem; font-weight: 800; color: #ffc800; display: block; }
         .budget-method { font-size: 0.72rem; color: rgba(255,255,255,0.3); }
         .job-skills { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.85rem; }
         .skill-tag {
@@ -435,29 +442,16 @@ export default function JobsPage() {
           50% { opacity: 0.4; }
         }
 
-        /* RESPONSIVE MEDIA QUERIES */
-        @media (min-width: 641px) {
+        /* MEDIA QUERIES PARA RESPONSIVE */
+        @media (min-width: 768px) {
           .job-card {
-          background: #13131a; 
-          /* Cambiamos el borde completo por uno solo en la parte inferior, más limpio */
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 0px; /* Al ser una lista continua con separador lineal, se ve mejor sin esquinas redondeadas */
-          padding: 2rem 1rem; /* Más espacio arriba y abajo para que respire */
-          text-decoration: none; 
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-          transition: background 0.2s, border-color 0.2s;
-        }
-
-        .job-card:hover {
-          background: #16161f;
-          /* Al pasar el mouse, iluminamos un poco el separador para dar feedback visual */
-          border-bottom-color: rgba(255, 200, 0, 0.3);
-        }
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 2rem;
+          }
           .job-image-wrap {
-            width: 250px; /* Tamaño controlado de la imagen de lado */
-            margin-bottom: 0;
+            width: 240px;
+            max-width: 240px;
           }
         }
 
