@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 
 // ─── types ────────────────────────────────────────────────────────────────────
 type Profile = {
@@ -93,7 +93,7 @@ function Avatar({ name, url, size = 64 }: { name: string; url?: string; size?: n
 // ─── main page ────────────────────────────────────────────────────────────────
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>()
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   const [profile, setProfile]   = useState<Profile | null>(null)
   const [reviews, setReviews]   = useState<Review[]>([])
