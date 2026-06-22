@@ -11,7 +11,7 @@ type Props = {
 }
 
 export default function ReviewForm({ jobId, reviewedId, reviewedName, onSuccess }: Props) {
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   const [rating,     setRating]     = useState(0)
   const [hovered,   setHovered]     = useState(0)
