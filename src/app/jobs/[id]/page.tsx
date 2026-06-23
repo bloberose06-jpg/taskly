@@ -167,8 +167,7 @@ export default function JobDetailPage() {
                     </>
                   )}
 
-                </div> {/* closes job-card */}
-                </div>
+                </div> {/* closes job-card */}            
               </div>
               
               {/* SIDEBAR */}
