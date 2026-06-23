@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+// line 4 should be exactly this:
+import { supabase } from '@/lib/supabase/client'
 
 type Props = {
   jobId: string
@@ -11,7 +12,6 @@ type Props = {
 }
 
 export default function ReviewForm({ jobId, reviewedId, reviewedName, onSuccess }: Props) {
-  const supabase = createClient()
 
   const [rating,     setRating]     = useState(0)
   const [hovered,   setHovered]     = useState(0)
