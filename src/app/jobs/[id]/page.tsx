@@ -8,13 +8,6 @@ import type { Job } from '@/types'
 
 import ReviewForm from '@/components/ReviewForm'
 
-// Inside the page, once the job is loaded and completed:
-<ReviewForm
-  jobId={job.id}
-  reviewedId={job.cliente_id}
-  reviewedName={clienteProfile.nombre}
-/>
-
 const MODALIDAD_COLORS: Record<string, string> = {
   Remoto: '#4ade80',
   Presencial: '#60a5fa',
@@ -160,9 +153,24 @@ export default function JobDetailPage() {
                       </div>
                     </>
                   )}
+                        {/* ADD THIS: */}
+                  {user && job.cliente_id && (
+                    <>
+                      <div className="divider" />
+                      <div className="section">
+                        <ReviewForm
+                          jobId={job.id}
+                          reviewedId={job.cliente_id}
+                          reviewedName="el cliente"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                </div> {/* closes job-card */}
                 </div>
               </div>
-
+              
               {/* SIDEBAR */}
               <div className="job-sidebar">
                 <div className="side-card budget-card">
