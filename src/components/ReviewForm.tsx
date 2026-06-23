@@ -25,7 +25,8 @@ export default function ReviewForm({ jobId, reviewedId, reviewedName, onSuccess 
     setLoading(true)
     setError(null)
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) { setError('Debes iniciar sesión para dejar una reseña.'); setLoading(false); return }
 
     const { error: err } = await supabase.from('reviews').insert({
