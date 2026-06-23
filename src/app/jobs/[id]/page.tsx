@@ -9,11 +9,11 @@ import type { Job } from '@/types'
 //import ReviewForm from '@/components/ReviewForm'
 
 // Inside the page, once the job is loaded and completed:
-<ReviewForm
+/*<ReviewForm
   jobId={job.id}
   reviewedId={job.cliente_id}
   reviewedName={clienteProfile.nombre}
-/>
+/>*/
 
 const MODALIDAD_COLORS: Record<string, string> = {
   Remoto: '#4ade80',
