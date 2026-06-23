@@ -23,6 +23,13 @@ export default function JobDetailPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   const [notFound, setNotFound] = useState(false)
+  const [clienteProfile, setClienteProfile] = useState<{
+    id: string
+    nombre: string
+    avg_rating: number
+    total_reviews: number
+    total_jobs: number
+  } | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -42,6 +49,14 @@ export default function JobDetailPage() {
       setNotFound(true)
     } else {
       setJob(data)
+      if (data.cliente_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id, nombre, avg_rating, total_reviews, total_jobs')
+          .eq('id', data.cliente_id)
+          .single()
+        if (profile) setClienteProfile(profile)
+      }
     }
     setLoading(false)
   }
@@ -111,13 +126,13 @@ export default function JobDetailPage() {
                     <span className="job-time">{timeAgo(job.created_at)}</span>
                   </div>
 
-                    {job.images && job.images.length > 0 && (
-                      <div className="job-gallery">
-                        {job.images.map((url, i) => (
-                          <img key={url} src={url} alt={`${job.titulo} - foto ${i + 1}`} className="gallery-img" />
-                        ))}
-                      </div>
-                    )}
+                  {job.images && job.images.length > 0 && (
+                    <div className="job-gallery">
+                      {job.images.map((url, i) => (
+                        <img key={url} src={url} alt={`${job.titulo} - foto ${i + 1}`} className="gallery-img" />
+                      ))}
+                    </div>
+                  )}
 
                   <h1 className="job-title">{job.titulo}</h1>
 
@@ -153,7 +168,7 @@ export default function JobDetailPage() {
                       </div>
                     </>
                   )}
-                        {/* ADD THIS: */}
+
                   {user && job.cliente_id && (
                     <>
                       <div className="divider" />
@@ -161,15 +176,15 @@ export default function JobDetailPage() {
                         <ReviewForm
                           jobId={job.id}
                           reviewedId={job.cliente_id}
-                          reviewedName="el cliente"
+                          reviewedName={clienteProfile?.nombre ?? 'el cliente'}
                         />
                       </div>
                     </>
                   )}
 
-                </div> {/* closes job-card */}            
+                </div> {/* closes job-card */}
               </div>
-              
+
               {/* SIDEBAR */}
               <div className="job-sidebar">
                 <div className="side-card budget-card">
@@ -187,6 +202,30 @@ export default function JobDetailPage() {
                     </Link>
                   )}
                 </div>
+
+                {/* CLIENTE CARD */}
+                {clienteProfile && (
+                  <div className="side-card">
+                    <h3 className="info-title">Publicado por</h3>
+                    <Link href={`/profile/${clienteProfile.id}`} className="cliente-link">
+                      <div className="cliente-avatar">
+                        {clienteProfile.nombre[0].toUpperCase()}
+                      </div>
+                      <div className="cliente-info">
+                        <span className="cliente-nombre">{clienteProfile.nombre}</span>
+                        <span className="cliente-meta">
+                          {'★'.repeat(Math.round(clienteProfile.avg_rating))}
+                          {'☆'.repeat(5 - Math.round(clienteProfile.avg_rating))}
+                          {' '}{clienteProfile.avg_rating.toFixed(1)} · {clienteProfile.total_reviews} reseña{clienteProfile.total_reviews !== 1 ? 's' : ''}
+                        </span>
+                        <span className="cliente-jobs">
+                          {clienteProfile.total_jobs} trabajo{clienteProfile.total_jobs !== 1 ? 's' : ''} publicados
+                        </span>
+                      </div>
+                      <span className="cliente-arrow">→</span>
+                    </Link>
+                  </div>
+                )}
 
                 <div className="side-card info-card">
                   <h3 className="info-title">Detalles</h3>
@@ -290,6 +329,7 @@ export default function JobDetailPage() {
           gap: 1.5rem;
           align-items: start;
         }
+        .job-main {}
         .job-card {
           background: #13131a;
           border: 1px solid rgba(255,255,255,0.07);
@@ -316,12 +356,8 @@ export default function JobDetailPage() {
           margin-bottom: 1rem;
         }
         .gallery-img {
-          width: 100%;
-          aspect-ratio: 4 / 3;
-          object-fit: cover;
-          border-radius: 10px;
-          border: 1px solid rgba(255,255,255,0.07);
-          display: block;
+          width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+          border-radius: 10px; border: 1px solid rgba(255,255,255,0.07); display: block;
         }
         .job-tags-row {
           display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
@@ -329,14 +365,10 @@ export default function JobDetailPage() {
         }
         .tag-modalidad { font-size: 0.82rem; font-weight: 600; }
         .tag-loc { font-size: 0.82rem; color: rgba(255,255,255,0.35); }
-        .divider {
-          height: 1px; background: rgba(255,255,255,0.05);
-          margin: 1.5rem 0;
-        }
+        .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 1.5rem 0; }
         .section-title {
           font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.08em; color: rgba(255,255,255,0.35);
-          margin: 0 0 0.85rem;
+          letter-spacing: 0.08em; color: rgba(255,255,255,0.35); margin: 0 0 0.85rem;
         }
         .job-desc {
           font-size: 0.95rem; color: rgba(255,255,255,0.65);
@@ -344,27 +376,21 @@ export default function JobDetailPage() {
         }
         .skills-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .skill-tag {
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
           border-radius: 8px; padding: 0.3rem 0.75rem;
           font-size: 0.8rem; color: rgba(255,255,255,0.5);
         }
         .job-sidebar { display: flex; flex-direction: column; gap: 1rem; }
         .side-card {
-          background: #13131a;
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 16px;
-          padding: 1.5rem;
+          background: #13131a; border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 16px; padding: 1.5rem;
         }
         .budget-card { text-align: center; }
         .budget-amount {
           font-size: 2rem; font-weight: 900; color: #ffc800;
           line-height: 1; margin-bottom: 0.3rem;
         }
-        .budget-method {
-          font-size: 0.8rem; color: rgba(255,255,255,0.3);
-          margin-bottom: 1.5rem;
-        }
+        .budget-method { font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-bottom: 1.5rem; }
         .btn-apply {
           display: block; width: 100%;
           background: #ffc800; color: #0a0a0f;
@@ -375,26 +401,38 @@ export default function JobDetailPage() {
           transition: background 0.2s, transform 0.15s;
         }
         .btn-apply:hover { background: #ffd700; transform: translateY(-1px); }
+        .cliente-link {
+          display: flex; align-items: center; gap: 0.85rem;
+          text-decoration: none; padding: 0.5rem; border-radius: 10px;
+          transition: background 0.2s; margin: -0.5rem;
+        }
+        .cliente-link:hover { background: rgba(255,255,255,0.04); }
+        .cliente-avatar {
+          width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+          background: rgba(255,200,0,0.15); border: 1.5px solid rgba(255,200,0,0.3);
+          color: #ffc800; font-size: 1rem; font-weight: 800;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .cliente-info { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
+        .cliente-nombre { font-size: 0.9rem; font-weight: 700; color: #fff; }
+        .cliente-meta { font-size: 0.72rem; color: rgba(255,200,0,0.7); }
+        .cliente-jobs { font-size: 0.72rem; color: rgba(255,255,255,0.3); }
+        .cliente-arrow { font-size: 0.85rem; color: rgba(255,255,255,0.2); }
+        .cliente-link:hover .cliente-arrow { color: #ffc800; }
         .info-title {
           font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.08em; color: rgba(255,255,255,0.3);
-          margin: 0 0 1rem;
+          letter-spacing: 0.08em; color: rgba(255,255,255,0.3); margin: 0 0 1rem;
         }
         .info-list { display: flex; flex-direction: column; gap: 0; }
         .info-row {
           display: flex; justify-content: space-between; align-items: center;
-          padding: 0.6rem 0;
-          border-bottom: 1px solid rgba(255,255,255,0.04);
-          font-size: 0.85rem;
+          padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem;
         }
         .info-row:last-child { border-bottom: none; }
         .info-label { color: rgba(255,255,255,0.35); }
         .info-value { color: rgba(255,255,255,0.75); font-weight: 500; text-align: right; max-width: 60%; }
         .skeleton-wrap { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
-        .skeleton {
-          background: #13131a; border-radius: 12px;
-          animation: pulse 1.5s ease-in-out infinite;
-        }
+        .skeleton { background: #13131a; border-radius: 12px; animation: pulse 1.5s ease-in-out infinite; }
         .sk-title { height: 48px; max-width: 500px; }
         .sk-meta { height: 24px; max-width: 300px; }
         .sk-body { height: 120px; }
@@ -407,8 +445,7 @@ export default function JobDetailPage() {
         .btn-primary {
           background: #ffc800; color: #0a0a0f; text-decoration: none;
           border-radius: 10px; padding: 0.75rem 1.5rem;
-          font-size: 0.9rem; font-weight: 700; display: inline-block;
-          transition: background 0.2s;
+          font-size: 0.9rem; font-weight: 700; display: inline-block; transition: background 0.2s;
         }
         .btn-primary:hover { background: #ffd700; }
         @media (max-width: 800px) {
