@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import type { Job } from '@/types'
 
-import ReviewForm from '@/components/ReviewForm'
+//import ReviewForm from '@/components/ReviewForm'
 
 // Inside the page, once the job is loaded and completed:
 <ReviewForm
