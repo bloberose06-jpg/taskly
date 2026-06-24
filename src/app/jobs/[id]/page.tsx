@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import type { Job } from '@/types'
-
 import ReviewForm from '@/components/ReviewForm'
 
 const MODALIDAD_COLORS: Record<string, string> = {
@@ -14,26 +13,37 @@ const MODALIDAD_COLORS: Record<string, string> = {
   Híbrido: '#c084fc',
 }
 
+type ClienteProfile = {
+  id: string
+  nombre: string
+  avg_rating: number
+  total_reviews: number
+  total_jobs: number
+}
+
+type ApplicationStatus = 'none' | 'pendiente' | 'aceptado' | 'rechazado'
+
 export default function JobDetailPage() {
   const params = useParams()
   const router = useRouter()
   const id = params?.id as string
 
-  const [job, setJob] = useState<Job | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
-  const [notFound, setNotFound] = useState(false)
-  const [clienteProfile, setClienteProfile] = useState<{
-    id: string
-    nombre: string
-    avg_rating: number
-    total_reviews: number
-    total_jobs: number
-  } | null>(null)
+  const [job,            setJob]            = useState<Job | null>(null)
+  const [loading,        setLoading]        = useState(true)
+  const [user,           setUser]           = useState<any>(null)
+  const [notFound,       setNotFound]       = useState(false)
+  const [clienteProfile, setClienteProfile] = useState<ClienteProfile | null>(null)
+  const [appStatus,      setAppStatus]      = useState<ApplicationStatus>('none')
+  const [appLoading,     setAppLoading]     = useState(false)
+  const [mensaje,        setMensaje]        = useState('')
+  const [showForm,       setShowForm]       = useState(false)
 
   useEffect(() => {
     if (!id) return
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user)
+      if (data.user) checkApplication(data.user.id)
+    })
     fetchJob()
   }, [id])
 
@@ -61,6 +71,58 @@ export default function JobDetailPage() {
     setLoading(false)
   }
 
+  const checkApplication = async (userId: string) => {
+    const { data } = await supabase
+      .from('applications')
+      .select('estado')
+      .eq('job_id', id)
+      .eq('applicant_id', userId)
+      .single()
+    if (data) setAppStatus(data.estado as ApplicationStatus)
+  }
+
+  const handleApply = async () => {
+    if (!user || !job) return
+    setAppLoading(true)
+
+    // 1. Get applicant profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, nombre')
+      .eq('id', user.id)
+      .single()
+
+    // 2. Insert application
+    const { data: app, error } = await supabase
+      .from('applications')
+      .insert({
+        job_id:       job.id,
+        applicant_id: user.id,
+        mensaje:      mensaje.trim() || null,
+        estado:       'pendiente',
+      })
+      .select()
+      .single()
+
+    if (error) {
+      setAppLoading(false)
+      return
+    }
+
+    // 3. Send notification to job owner
+    await supabase.from('notifications').insert({
+      user_id:        job.cliente_id,
+      title:          '📩 Nueva aplicación recibida',
+      body:           `${profile?.nombre ?? 'Un usuario'} aplicó a tu trabajo "${job.titulo}"`,
+      job_id:         job.id,
+      application_id: app.id,
+    })
+
+    setAppStatus('pendiente')
+    setShowForm(false)
+    setAppLoading(false)
+  }
+
   const timeAgo = (date: string) => {
     const diff = Date.now() - new Date(date).getTime()
     const mins = Math.floor(diff / 60000)
@@ -71,6 +133,8 @@ export default function JobDetailPage() {
     if (days < 7) return `hace ${days}d`
     return new Date(date).toLocaleDateString('es-GT', { day: 'numeric', month: 'long', year: 'numeric' })
   }
+
+  const isOwner = user && job && user.id === job.cliente_id
 
   return (
     <div className="page">
@@ -128,7 +192,7 @@ export default function JobDetailPage() {
 
                   {job.images && job.images.length > 0 && (
                     <div className="job-gallery">
-                      {job.images.map((url, i) => (
+                      {job.images.map((url: string, i: number) => (
                         <img key={url} src={url} alt={`${job.titulo} - foto ${i + 1}`} className="gallery-img" />
                       ))}
                     </div>
@@ -137,15 +201,10 @@ export default function JobDetailPage() {
                   <h1 className="job-title">{job.titulo}</h1>
 
                   <div className="job-tags-row">
-                    <span
-                      className="tag-modalidad"
-                      style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}
-                    >
+                    <span className="tag-modalidad" style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}>
                       ● {job.modalidad}
                     </span>
-                    {job.ubicacion && (
-                      <span className="tag-loc">📍 {job.ubicacion}</span>
-                    )}
+                    {job.ubicacion && <span className="tag-loc">📍 {job.ubicacion}</span>}
                   </div>
 
                   <div className="divider" />
@@ -161,7 +220,7 @@ export default function JobDetailPage() {
                       <div className="section">
                         <h2 className="section-title">Habilidades requeridas</h2>
                         <div className="skills-list">
-                          {job.tags.map((t) => (
+                          {job.tags.map((t: string) => (
                             <span key={t} className="skill-tag">{t}</span>
                           ))}
                         </div>
@@ -169,7 +228,8 @@ export default function JobDetailPage() {
                     </>
                   )}
 
-                  {user && job.cliente_id && (
+                  {/* Review form — only when job is completed and user is not the owner */}
+                  {user && !isOwner && job.estado === 'completado' && job.cliente_id && (
                     <>
                       <div className="divider" />
                       <div className="section">
@@ -181,29 +241,65 @@ export default function JobDetailPage() {
                       </div>
                     </>
                   )}
-
-                </div> {/* closes job-card */}
+                </div>
               </div>
 
               {/* SIDEBAR */}
               <div className="job-sidebar">
+
+                {/* Budget + Apply */}
                 <div className="side-card budget-card">
                   <div className="budget-amount">
                     {job.moneda} {Number(job.presupuesto).toLocaleString('es-GT')}
                   </div>
                   <div className="budget-method">{job.metodo_pago}</div>
-                  {user ? (
-                    <button className="btn-apply">
-                      Aplicar a este trabajo →
-                    </button>
-                  ) : (
+
+                  {/* Owner sees job status */}
+                  {isOwner ? (
+                    <div className="owner-badge">✏️ Tu publicación</div>
+                  ) : !user ? (
                     <Link href="/login" className="btn-apply">
                       Inicia sesión para aplicar →
                     </Link>
-                  )}
+                  ) : appStatus === 'none' && !showForm ? (
+                    <button className="btn-apply" onClick={() => setShowForm(true)}>
+                      Aplicar a este trabajo →
+                    </button>
+                  ) : appStatus === 'none' && showForm ? (
+                    <div className="apply-form">
+                      <p className="apply-label">Mensaje al cliente <span>(opcional)</span></p>
+                      <textarea
+                        className="apply-textarea"
+                        placeholder="Preséntate, explica tu experiencia o por qué eres ideal para este trabajo…"
+                        value={mensaje}
+                        onChange={(e) => setMensaje(e.target.value)}
+                        rows={4}
+                        maxLength={500}
+                      />
+                      <span className="apply-chars">{mensaje.length}/500</span>
+                      <div className="apply-actions">
+                        <button className="btn-ghost" onClick={() => setShowForm(false)}>
+                          Cancelar
+                        </button>
+                        <button
+                          className="btn-apply-submit"
+                          onClick={handleApply}
+                          disabled={appLoading}
+                        >
+                          {appLoading ? 'Enviando…' : 'Enviar aplicación →'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : appStatus === 'pendiente' ? (
+                    <div className="status-badge pending">⏳ Aplicación enviada</div>
+                  ) : appStatus === 'aceptado' ? (
+                    <div className="status-badge accepted">✅ Aplicación aceptada</div>
+                  ) : appStatus === 'rechazado' ? (
+                    <div className="status-badge rejected">❌ No seleccionado</div>
+                  ) : null}
                 </div>
 
-                {/* CLIENTE CARD */}
+                {/* Cliente card */}
                 {clienteProfile && (
                   <div className="side-card">
                     <h3 className="info-title">Publicado por</h3>
@@ -227,6 +323,7 @@ export default function JobDetailPage() {
                   </div>
                 )}
 
+                {/* Details */}
                 <div className="side-card info-card">
                   <h3 className="info-title">Detalles</h3>
                   <div className="info-list">
@@ -236,10 +333,7 @@ export default function JobDetailPage() {
                     </div>
                     <div className="info-row">
                       <span className="info-label">Modalidad</span>
-                      <span
-                        className="info-value"
-                        style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}
-                      >
+                      <span className="info-value" style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}>
                         {job.modalidad}
                       </span>
                     </div>
@@ -252,6 +346,10 @@ export default function JobDetailPage() {
                     <div className="info-row">
                       <span className="info-label">Pago</span>
                       <span className="info-value">{job.metodo_pago}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="info-label">Estado</span>
+                      <span className={`info-value estado-${job.estado}`}>{job.estado}</span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Publicado</span>
@@ -267,170 +365,99 @@ export default function JobDetailPage() {
 
       <style jsx>{`
         * { box-sizing: border-box; }
-        .page {
-          min-height: 100vh;
-          background: #0a0a0f;
-          color: #fff;
-          font-family: 'DM Sans', 'Segoe UI', sans-serif;
-        }
-        .nav {
-          position: sticky; top: 0; z-index: 100;
-          background: rgba(10,10,15,0.9);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        .nav-inner {
-          max-width: 1100px; margin: 0 auto;
-          padding: 1rem 1.5rem;
-          display: flex; align-items: center; justify-content: space-between;
-        }
+        .page { min-height: 100vh; background: #0a0a0f; color: #fff; font-family: 'DM Sans', 'Segoe UI', sans-serif; }
+        .nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,15,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .nav-inner { max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
         .logo { display: flex; align-items: center; gap: 0.4rem; text-decoration: none; }
         .logo-icon { font-size: 1.4rem; }
         .logo-text { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.15em; color: #ffc800; }
         .nav-links { display: flex; align-items: center; gap: 1.5rem; }
         .nav-link { color: rgba(255,255,255,0.45); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
         .nav-link:hover { color: #fff; }
-        .btn-nav {
-          background: #ffc800; color: #0a0a0f; text-decoration: none;
-          border-radius: 8px; padding: 0.5rem 1rem;
-          font-size: 0.85rem; font-weight: 700; transition: background 0.2s;
-        }
+        .btn-nav { background: #ffc800; color: #0a0a0f; text-decoration: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 700; }
         .btn-nav:hover { background: #ffd700; }
-        .user-pill {
-          display: flex; align-items: center; gap: 0.5rem;
-          background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.2);
-          border-radius: 999px; padding: 0.35rem 0.75rem 0.35rem 0.35rem;
-          text-decoration: none; transition: background 0.2s;
-        }
+        .user-pill { display: flex; align-items: center; gap: 0.5rem; background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.2); border-radius: 999px; padding: 0.35rem 0.75rem 0.35rem 0.35rem; text-decoration: none; }
         .user-pill:hover { background: rgba(255,200,0,0.15); }
-        .user-avatar {
-          width: 26px; height: 26px; border-radius: 50%;
-          background: #ffc800; color: #0a0a0f;
-          font-size: 0.75rem; font-weight: 800;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .user-email {
-          font-size: 0.8rem; color: rgba(255,255,255,0.6);
-          max-width: 140px; overflow: hidden;
-          text-overflow: ellipsis; white-space: nowrap;
-        }
+        .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: #ffc800; color: #0a0a0f; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+        .user-email { font-size: 0.8rem; color: rgba(255,255,255,0.6); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .content { padding: 2rem 1.5rem 5rem; }
         .content-inner { max-width: 1100px; margin: 0 auto; }
-        .back-btn {
-          background: none; border: none; color: rgba(255,255,255,0.4);
-          font-size: 0.85rem; cursor: pointer; padding: 0;
-          font-family: inherit; transition: color 0.2s;
-          margin-bottom: 1.75rem; display: block;
-        }
+        .back-btn { background: none; border: none; color: rgba(255,255,255,0.4); font-size: 0.85rem; cursor: pointer; padding: 0; font-family: inherit; transition: color 0.2s; margin-bottom: 1.75rem; display: block; }
         .back-btn:hover { color: #fff; }
-        .job-layout {
-          display: grid;
-          grid-template-columns: 1fr 320px;
-          gap: 1.5rem;
-          align-items: start;
-        }
+        .job-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items: start; }
         .job-main {}
-        .job-card {
-          background: #13131a;
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 20px;
-          padding: 2rem;
-        }
-        .job-top {
-          display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 0.85rem;
-        }
-        .job-cat {
-          font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.08em; color: rgba(255,200,0,0.7);
-        }
+        .job-card { background: #13131a; border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; padding: 2rem; }
+        .job-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; }
+        .job-cat { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,200,0,0.7); }
         .job-time { font-size: 0.75rem; color: rgba(255,255,255,0.25); }
-        .job-title {
-          font-size: 1.6rem; font-weight: 800; color: #fff;
-          margin: 0 0 1rem; line-height: 1.25; letter-spacing: -0.02em;
-        }
-        .job-gallery {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-          gap: 0.6rem;
-          margin-bottom: 1rem;
-        }
-        .gallery-img {
-          width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
-          border-radius: 10px; border: 1px solid rgba(255,255,255,0.07); display: block;
-        }
-        .job-tags-row {
-          display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
-          margin-bottom: 0.25rem;
-        }
+        .job-title { font-size: 1.6rem; font-weight: 800; color: #fff; margin: 0 0 1rem; line-height: 1.25; letter-spacing: -0.02em; }
+        .job-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
+        .gallery-img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.07); display: block; }
+        .job-tags-row { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; margin-bottom: 0.25rem; }
         .tag-modalidad { font-size: 0.82rem; font-weight: 600; }
         .tag-loc { font-size: 0.82rem; color: rgba(255,255,255,0.35); }
         .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 1.5rem 0; }
-        .section-title {
-          font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.08em; color: rgba(255,255,255,0.35); margin: 0 0 0.85rem;
-        }
-        .job-desc {
-          font-size: 0.95rem; color: rgba(255,255,255,0.65);
-          line-height: 1.75; margin: 0; white-space: pre-wrap;
-        }
+        .section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); margin: 0 0 0.85rem; }
+        .job-desc { font-size: 0.95rem; color: rgba(255,255,255,0.65); line-height: 1.75; margin: 0; white-space: pre-wrap; }
         .skills-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .skill-tag {
-          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 8px; padding: 0.3rem 0.75rem;
-          font-size: 0.8rem; color: rgba(255,255,255,0.5);
-        }
+        .skill-tag { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0.3rem 0.75rem; font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+
+        /* SIDEBAR */
         .job-sidebar { display: flex; flex-direction: column; gap: 1rem; }
-        .side-card {
-          background: #13131a; border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 16px; padding: 1.5rem;
-        }
+        .side-card { background: #13131a; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 1.5rem; }
         .budget-card { text-align: center; }
-        .budget-amount {
-          font-size: 2rem; font-weight: 900; color: #ffc800;
-          line-height: 1; margin-bottom: 0.3rem;
-        }
+        .budget-amount { font-size: 2rem; font-weight: 900; color: #ffc800; line-height: 1; margin-bottom: 0.3rem; }
         .budget-method { font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-bottom: 1.5rem; }
-        .btn-apply {
-          display: block; width: 100%;
-          background: #ffc800; color: #0a0a0f;
-          border: none; border-radius: 10px;
-          padding: 0.85rem 1rem; font-size: 0.9rem; font-weight: 700;
-          font-family: inherit; cursor: pointer;
-          text-decoration: none; text-align: center;
-          transition: background 0.2s, transform 0.15s;
-        }
+
+        .btn-apply { display: block; width: 100%; background: #ffc800; color: #0a0a0f; border: none; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.9rem; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; text-align: center; transition: background 0.2s, transform 0.15s; }
         .btn-apply:hover { background: #ffd700; transform: translateY(-1px); }
-        .cliente-link {
-          display: flex; align-items: center; gap: 0.85rem;
-          text-decoration: none; padding: 0.5rem; border-radius: 10px;
-          transition: background 0.2s; margin: -0.5rem;
-        }
+
+        .owner-badge { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem; font-size: 0.85rem; color: rgba(255,255,255,0.5); text-align: center; }
+
+        /* Apply form */
+        .apply-form { display: flex; flex-direction: column; gap: 0.6rem; text-align: left; }
+        .apply-label { font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+        .apply-label span { text-transform: none; font-weight: 400; }
+        .apply-textarea { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem; color: #fff; font-size: 0.85rem; font-family: inherit; line-height: 1.6; resize: vertical; outline: none; box-sizing: border-box; }
+        .apply-textarea:focus { border-color: rgba(255,200,0,0.4); }
+        .apply-chars { font-size: 0.7rem; color: rgba(255,255,255,0.2); text-align: right; }
+        .apply-actions { display: flex; gap: 0.5rem; }
+        .btn-ghost { flex: 1; background: none; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.4); border-radius: 8px; padding: 0.65rem; font-size: 0.82rem; font-family: inherit; cursor: pointer; transition: border-color 0.2s; }
+        .btn-ghost:hover { border-color: rgba(255,255,255,0.25); }
+        .btn-apply-submit { flex: 2; background: #ffc800; color: #0a0a0f; border: none; border-radius: 8px; padding: 0.65rem; font-size: 0.82rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: background 0.2s; }
+        .btn-apply-submit:hover:not(:disabled) { background: #ffd700; }
+        .btn-apply-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Status badges */
+        .status-badge { border-radius: 10px; padding: 0.75rem; font-size: 0.85rem; font-weight: 600; text-align: center; }
+        .status-badge.pending  { background: rgba(234,179,8,0.1);  border: 1px solid rgba(234,179,8,0.25);  color: #facc15; }
+        .status-badge.accepted { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.25);  color: #4ade80; }
+        .status-badge.rejected { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.25);  color: #f87171; }
+
+        /* Cliente card */
+        .cliente-link { display: flex; align-items: center; gap: 0.85rem; text-decoration: none; padding: 0.5rem; border-radius: 10px; transition: background 0.2s; margin: -0.5rem; }
         .cliente-link:hover { background: rgba(255,255,255,0.04); }
-        .cliente-avatar {
-          width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
-          background: rgba(255,200,0,0.15); border: 1.5px solid rgba(255,200,0,0.3);
-          color: #ffc800; font-size: 1rem; font-weight: 800;
-          display: flex; align-items: center; justify-content: center;
-        }
+        .cliente-avatar { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; background: rgba(255,200,0,0.15); border: 1.5px solid rgba(255,200,0,0.3); color: #ffc800; font-size: 1rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
         .cliente-info { display: flex; flex-direction: column; gap: 0.15rem; flex: 1; }
         .cliente-nombre { font-size: 0.9rem; font-weight: 700; color: #fff; }
         .cliente-meta { font-size: 0.72rem; color: rgba(255,200,0,0.7); }
         .cliente-jobs { font-size: 0.72rem; color: rgba(255,255,255,0.3); }
         .cliente-arrow { font-size: 0.85rem; color: rgba(255,255,255,0.2); }
         .cliente-link:hover .cliente-arrow { color: #ffc800; }
-        .info-title {
-          font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.08em; color: rgba(255,255,255,0.3); margin: 0 0 1rem;
-        }
+
+        /* Info card */
+        .info-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.3); margin: 0 0 1rem; }
         .info-list { display: flex; flex-direction: column; gap: 0; }
-        .info-row {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem;
-        }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; }
         .info-row:last-child { border-bottom: none; }
         .info-label { color: rgba(255,255,255,0.35); }
-        .info-value { color: rgba(255,255,255,0.75); font-weight: 500; text-align: right; max-width: 60%; }
+        .info-value { color: rgba(255,255,255,0.75); font-weight: 500; text-align: right; max-width: 60%; text-transform: capitalize; }
+        .estado-abierto   { color: #4ade80 !important; }
+        .estado-cerrado   { color: #f87171 !important; }
+        .estado-completado { color: #ffc800 !important; }
+        .estado-pausado   { color: #facc15 !important; }
+
+        /* Skeletons */
         .skeleton-wrap { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
         .skeleton { background: #13131a; border-radius: 12px; animation: pulse 1.5s ease-in-out infinite; }
         .sk-title { height: 48px; max-width: 500px; }
@@ -438,16 +465,14 @@ export default function JobDetailPage() {
         .sk-body { height: 120px; }
         .sk-body.short { height: 60px; max-width: 60%; }
         @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
         .not-found { text-align: center; padding: 6rem 1rem; }
         .nf-icon { font-size: 3rem; margin-bottom: 1rem; }
         .not-found h2 { font-size: 1.3rem; font-weight: 700; margin: 0 0 0.5rem; }
         .not-found p { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0 0 1.5rem; }
-        .btn-primary {
-          background: #ffc800; color: #0a0a0f; text-decoration: none;
-          border-radius: 10px; padding: 0.75rem 1.5rem;
-          font-size: 0.9rem; font-weight: 700; display: inline-block; transition: background 0.2s;
-        }
+        .btn-primary { background: #ffc800; color: #0a0a0f; text-decoration: none; border-radius: 10px; padding: 0.75rem 1.5rem; font-size: 0.9rem; font-weight: 700; display: inline-block; transition: background 0.2s; }
         .btn-primary:hover { background: #ffd700; }
+
         @media (max-width: 800px) {
           .job-layout { grid-template-columns: 1fr; }
           .job-sidebar { order: -1; }
