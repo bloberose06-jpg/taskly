@@ -99,6 +99,9 @@ export default function NotificationsPage() {
     action: 'aceptado' | 'rechazado'
   ) => {
     if (!notif.appInfo) return
+    if (action === 'aceptado' && notif.job_id) {
+  router.push(`/jobs/${notif.job_id}/workspace`)
+}
     setActionLoading(notif.appInfo.id + action)
 
     await supabase
