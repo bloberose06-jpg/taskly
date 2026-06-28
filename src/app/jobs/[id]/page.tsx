@@ -147,6 +147,8 @@ export default function JobDetailPage() {
           </Link>
           <div className="nav-links">
             <Link href="/jobs" className="nav-link">Ver trabajos</Link>
+            {user && <Link href="/workspaces" className="nav-link">Mis trabajos</Link>}
+            {user && <Link href="/notifications" className="nav-link">Notificaciones</Link>}
             {user ? (
               <Link href="/profile" className="user-pill">
                 <span className="user-avatar">{user.email?.[0].toUpperCase()}</span>
@@ -293,7 +295,9 @@ export default function JobDetailPage() {
                   ) : appStatus === 'pendiente' ? (
                     <div className="status-badge pending">⏳ Aplicación enviada</div>
                   ) : appStatus === 'aceptado' ? (
-                    <div className="status-badge accepted">✅ Aplicación aceptada</div>
+                    <Link href={`/jobs/${job.id}/workspace`} className="btn-workspace">
+                      🚀 Ir al workspace →
+                    </Link>
                   ) : appStatus === 'rechazado' ? (
                     <div className="status-badge rejected">❌ No seleccionado</div>
                   ) : null}
@@ -413,6 +417,8 @@ export default function JobDetailPage() {
         .btn-apply:hover { background: #ffd700; transform: translateY(-1px); }
 
         .owner-badge { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.75rem; font-size: 0.85rem; color: rgba(255,255,255,0.5); text-align: center; }
+        .btn-workspace { display: block; width: 100%; background: linear-gradient(135deg, #ffc800, #ff9500); color: #0a0a0f; border: none; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.9rem; font-weight: 700; font-family: inherit; cursor: pointer; text-decoration: none; text-align: center; transition: opacity 0.2s, transform 0.15s; }
+        .btn-workspace:hover { opacity: 0.9; transform: translateY(-1px); }
 
         /* Apply form */
         .apply-form { display: flex; flex-direction: column; gap: 0.6rem; text-align: left; }
