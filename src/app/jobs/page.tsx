@@ -82,14 +82,20 @@ export default function JobsPage() {
           <div className="nav-links">
             <Link href="/jobs" className="nav-link active">Ver trabajos</Link>
             {user ? (
-              <Link href="/profile" className="user-pill">
-                <span className="user-avatar">{user.email?.[0].toUpperCase()}</span>
-                <span className="user-email">{user.email}</span>
-              </Link>
+              <>
+                <Link href="/workspaces"    className="nav-link">Mis trabajos</Link>
+                <Link href="/notifications" className="nav-link">Notificaciones</Link>
+                <Link href="/profile" className="user-pill">
+                  <span className="user-avatar">{user.email?.[0].toUpperCase()}</span>
+                  <span className="user-email">{user.email}</span>
+                </Link>
+                <NotificationBell />
+              </>
             ) : (
               <Link href="/login" className="nav-link">Iniciar sesión</Link>
             )}
             <Link href="/dashboard" className="btn-nav">Publicar trabajo</Link>
+          </div>
             
             <NotificationBell />
           </div>
