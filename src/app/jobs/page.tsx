@@ -24,11 +24,10 @@ const CATEGORIAS = [
   'Otro',
 ]
 
-// UPDATED: Professional & Futuristic colors for job types
 const MODALIDAD_COLORS: Record<string, string> = {
-  Remoto: '#4fd1c5',    // Clean Cyan (Futuristic)
-  Presencial: '#3182ce', // Royal Blue (Professional)
-  Híbrido: '#a0aec0',   // Cool Slate Gray (Balanced)
+  Remoto: '#0d9488',     // Teal
+  Presencial: '#2563eb',  // Blue
+  Híbrido: '#4b5563',    // Muted Gray
 }
 
 export default function JobsPage() {
@@ -98,7 +97,6 @@ export default function JobsPage() {
               </Link>
             )}
       
-            {/* UPDATED: Clean button color */}
             <Link href="/dashboard" className="btn-nav">
               Publicar trabajo
             </Link>
@@ -115,7 +113,7 @@ export default function JobsPage() {
             <span className="search-icon">🔍</span>
             <input
               type="text"
-              placeholder="Buscar trabajos..."
+              placeholder="Buscar por título o descripción..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="search-input"
@@ -147,7 +145,6 @@ export default function JobsPage() {
             <span className="results-count">
               {loading ? 'Cargando...' : `${filtered.length} trabajo${filtered.length !== 1 ? 's' : ''}`}
             </span>
-            {/* UPDATED: Sleek primary color */}
             <Link href="/dashboard" className="btn-post">+ Publicar trabajo</Link>
           </div>
 
@@ -160,9 +157,9 @@ export default function JobsPage() {
           ) : filtered.length === 0 ? (
             <div className="empty">
               <div className="empty-icon">📭</div>
-              <h3>No hay trabajos{search ? ' para esta búsqueda' : ' aún'}</h3>
-              <p>{search ? 'Intenta con otros términos' : 'Sé el primero en publicar uno'}</p>
-              <Link href="/dashboard" className="btn-primary">Publicar trabajo →</Link>
+              <h3>No hay trabajos para mostrar</h3>
+              <p>{search ? 'Intenta ajustando tus términos de búsqueda' : 'Sé el primero en publicar una oferta corporativa'}</p>
+              <Link href="/dashboard" className="btn-primary">Publicar trabajo</Link>
             </div>
           ) : (
             <div className="jobs-grid">
@@ -180,7 +177,7 @@ export default function JobsPage() {
                           )}
                         </>
                       ) : (
-                        /* UPDATED: Sleek geometric placeholder */
+                        /* Simple Muted Placeholder */
                         <div className="job-image-placeholder">
                           <span>{job.categoria || 'Taskly'}</span>
                         </div>
@@ -196,7 +193,7 @@ export default function JobsPage() {
                       <h2 className="job-title">{job.titulo}</h2>
                       <p className="job-desc">{job.descripcion}</p>
                       
-                      {/* Skills Intermedias if existen */}
+                      {/* Skills tags sutiles */}
                       {job.tags && job.tags.length > 0 && (
                         <div className="job-skills">
                           {job.tags.slice(0, 3).map((t) => (
@@ -209,7 +206,7 @@ export default function JobsPage() {
                         <div className="job-tags">
                           <span
                             className="tag-modalidad"
-                            style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}
+                            style={{ color: MODALIDAD_COLORS[job.modalidad] || '#1f2937' }}
                           >
                             ● {job.modalidad}
                           </span>
@@ -231,7 +228,7 @@ export default function JobsPage() {
                   {/* Acceso directo al perfil integrado limpiamente abajo */}
                   <div className="job-card-footer-action">
                     <Link href={`/profile/${job.cliente_id}`} className="view-profile-link">
-                      Ver perfil del cliente →
+                      Ver perfil de la empresa →
                     </Link>
                   </div>
                 </div>
@@ -243,296 +240,202 @@ export default function JobsPage() {
 
       <style jsx>{`
         * { box-sizing: border-box; }
+        
+        /* THEME CHANGES: Light Mode, Hyper-Clean Minimalist */
         .page {
           min-height: 100vh;
-          /* UPDATED: True black for infinite space feel */
-          background: #010101;
-          color: #fff;
-          font-family: 'DM Sans', 'Segoe UI', sans-serif;
+          background: #fcfcfd;
+          color: #111827; /* Dark charcoal text */
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         /* NAV */
         .nav {
           position: sticky; top: 0; z-index: 100;
-          /* UPDATED: Glassmorphism blend */
-          background: rgba(1,1,1,0.7);
-          backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255,255,255,0.03);
+          background: rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid #e5e7eb;
         }
         .nav-inner {
-          max-width: 1200px; margin: 0 auto;
-          padding: 1rem 1.5rem;
+          max-width: 1140px; margin: 0 auto;
+          padding: 0.85rem 1.5rem;
           display: flex; align-items: center; justify-content: space-between;
         }
         .logo { display: flex; align-items: center; gap: 0.4rem; text-decoration: none; }
-        .logo-icon { font-size: 1.4rem; filter: hue-rotate(180deg); } /* Shifts yellow icon to cyan */
-        /* UPDATED: Sleek white logo */
-        .logo-text { font-size: 1.2rem; font-weight: 900; letter-spacing: 0.15em; color: #fff; }
+        .logo-icon { font-size: 1.2rem; }
+        .logo-text { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.05em; color: #111827; }
         .nav-links { display: flex; align-items: center; gap: 1.5rem; }
-        .nav-link { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
-        .nav-link:hover, .nav-link.active { color: #fff; }
+        .nav-link { color: #4b5563; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.15s; }
+        .nav-link:hover, .nav-link.active { color: #111827; }
         
-        /* UPDATED: Modern primary blue for action */
         .btn-nav {
-          background: #2b6cb0; color: #fff; text-decoration: none;
-          border-radius: 8px; padding: 0.5rem 1rem;
-          font-size: 0.85rem; font-weight: 700; transition: background 0.2s;
+          background: #111827; color: #fff; text-decoration: none;
+          border-radius: 6px; padding: 0.45rem 0.9rem;
+          font-size: 0.85rem; font-weight: 500; transition: background 0.15s;
         }
-        .btn-nav:hover { background: #3182ce; }
+        .btn-nav:hover { background: #1f2937; }
         
         .user-pill {
           display: flex; align-items: center; gap: 0.5rem;
-          background: rgba(43,108,176,0.08); border: 1px solid rgba(43,108,176,0.2);
-          border-radius: 999px; padding: 0.35rem 0.75rem 0.35rem 0.35rem;
-          text-decoration: none; transition: background 0.2s;
+          background: #f3f4f6; border: 1px solid #e5e7eb;
+          border-radius: 999px; padding: 0.25rem 0.65rem 0.25rem 0.25rem;
+          text-decoration: none;
         }
-        .user-pill:hover { background: rgba(43,108,176,0.15); }
         .user-avatar {
-          width: 26px; height: 26px; border-radius: 50%;
-          background: #2b6cb0; color: #fff;
-          font-size: 0.75rem; font-weight: 800;
+          width: 24px; height: 24px; border-radius: 50%;
+          background: #111827; color: #fff;
+          font-size: 0.7rem; font-weight: 600;
           display: flex; align-items: center; justify-content: center;
         }
-        .user-email {
-          font-size: 0.8rem; color: rgba(255,255,255,0.6);
-          max-width: 140px; overflow: hidden;
-          text-overflow: ellipsis; white-space: nowrap;
-        }
+        .user-email { font-size: 0.8rem; color: #4b5563; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         /* HEADER */
         .header {
-          padding: 4rem 1.5rem 3rem;
-          /* UPDATED: Subtle deep cyan gradient */
-          background-image: radial-gradient(ellipse at 50% 0%, rgba(79,209,197,0.03) 0%, transparent 65%);
-          border-bottom: 1px solid rgba(255,255,255,0.03);
+          padding: 3.5rem 1.5rem 2.5rem;
+          background: #ffffff;
+          border-bottom: 1px solid #e5e7eb;
         }
-        .header-inner { max-width: 1200px; margin: 0 auto; }
-        .header-title { font-size: 2.2rem; font-weight: 800; margin: 0 0 0.4rem; letter-spacing: -0.02em; }
-        .header-sub { color: rgba(255,255,255,0.4); font-size: 0.95rem; margin: 0 0 2rem; }
+        .header-inner { max-width: 1140px; margin: 0 auto; }
+        .header-title { font-size: 2rem; font-weight: 700; margin: 0 0 0.3rem; color: #111827; letter-spacing: -0.01em; }
+        .header-sub { color: #6b7280; font-size: 0.95rem; margin: 0 0 1.5rem; }
+        
         .search-bar {
-          display: flex; align-items: center; gap: 0.75rem;
-          /* UPDATED: Deep background */
-          background: #09090c; border: 1px solid rgba(255,255,255,0.04);
-          border-radius: 12px; padding: 0.75rem 1.2rem;
-          max-width: 480px; transition: all 0.2s;
+          display: flex; align-items: center; gap: 0.6rem;
+          background: #f9fafb; border: 1px solid #d1d5db;
+          border-radius: 8px; padding: 0.6rem 1rem;
+          max-width: 460px; transition: all 0.15s;
         }
-        .search-bar:focus-within { border-color: rgba(79,209,197,0.3); box-shadow: 0 0 10px rgba(79,209,197,0.1); }
-        .search-icon { font-size: 0.9rem; opacity: 0.3; }
-        .search-input {
-          flex: 1; background: none; border: none; outline: none;
-          color: #fff; font-size: 0.95rem; font-family: inherit;
-        }
-        .search-input::placeholder { color: rgba(255,255,255,0.2); }
-        .search-clear {
-          background: none; border: none; color: rgba(255,255,255,0.3);
-          cursor: pointer; font-size: 0.8rem; padding: 0;
-        }
+        .search-bar:focus-within { border-color: #111827; background: #fff; box-shadow: 0 0 0 1px #111827; }
+        .search-icon { font-size: 0.85rem; opacity: 0.5; }
+        .search-input { flex: 1; background: none; border: none; outline: none; color: #111827; font-size: 0.9rem; }
+        .search-input::placeholder { color: #9ca3af; }
+        .search-clear { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 0.8rem; }
 
         /* CONTENT */
         .content { padding: 2.5rem 1.5rem 5rem; }
-        .content-inner { max-width: 1200px; margin: 0 auto; }
+        .content-inner { max-width: 1140px; margin: 0 auto; }
 
         /* FILTROS */
-        .filters {
-          display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem;
-        }
+        .filters { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 2rem; }
         .filter-btn {
-          background: transparent; border: 1px solid rgba(255,255,255,0.04);
-          border-radius: 999px; padding: 0.45rem 1rem;
-          color: rgba(255,255,255,0.4); font-size: 0.82rem;
-          font-family: inherit; cursor: pointer; transition: all 0.2s;
+          background: #fff; border: 1px solid #e5e7eb;
+          border-radius: 6px; padding: 0.4rem 0.85rem;
+          color: #4b5563; font-size: 0.82rem; font-weight: 500;
+          cursor: pointer; transition: all 0.15s;
         }
-        .filter-btn:hover { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
-        /* UPDATED: Sleek active state */
+        .filter-btn:hover { border-color: #9ca3af; color: #111827; }
         .filter-btn.active {
-          background: rgba(79,209,197,0.07); border-color: rgba(79,209,197,0.2);
-          color: #4fd1c5; font-weight: 600;
+          background: #111827; border-color: #111827; color: #fff;
         }
 
         /* RESULTS HEADER */
-        .results-header {
-          display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 1.5rem;
-        }
-        .results-count { font-size: 0.85rem; color: rgba(255,255,255,0.35); }
-        /* UPDATED: Professional secondary action */
+        .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .results-count { font-size: 0.85rem; color: #6b7280; font-weight: 500; }
         .btn-post {
-          background: transparent; border: 1px solid rgba(43,108,176,0.3);
-          color: #3182ce; text-decoration: none; border-radius: 8px;
-          padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600;
-          transition: all 0.2s;
+          background: #fff; border: 1px solid #d1d5db;
+          color: #111827; text-decoration: none; border-radius: 6px;
+          padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 500;
+          transition: all 0.15s;
         }
-        .btn-post:hover { background: rgba(43,108,176,0.06); border-color: #3182ce; }
+        .btn-post:hover { border-color: #111827; background: #f9fafb; }
 
-        /* JOBS GRID */
+        /* JOBS GRID - CLEAN SIMPLE BOXES */
         .jobs-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1.75rem;
+          grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+          gap: 1.5rem;
         }
 
         .job-card-wrapper {
-          /* UPDATED: Deep space background and ultra-thin borders */
-          background: #060608;
-          border: 1px solid rgba(255, 255, 255, 0.03);
-          border-radius: 14px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          transition: all 0.2s;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .job-card-wrapper:hover {
-          /* UPDATED: Glowing futuristic interaction */
-          border-color: rgba(79, 209, 197, 0.15);
-          transform: translateY(-4px) scale(1.005);
-          box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 15px rgba(79,209,197,0.03);
+          border-color: #9ca3af;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+          transform: translateY(-2px);
         }
 
-        .job-card {
-          text-decoration: none;
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          padding: 1.25rem;
-          color: inherit;
-        }
+        .job-card { text-decoration: none; display: flex; flex-direction: column; height: 100%; padding: 1.25rem; color: inherit; }
 
         .job-image-wrap {
-          position: relative;
-          width: 100%;
-          aspect-ratio: 16 / 9;
-          border-radius: 8px;
-          overflow: hidden;
-          /* UPDATED: Ultra dark container */
-          background: #020202;
-          margin-bottom: 1rem;
+          position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 4px; overflow: hidden; background: #f3f4f6; margin-bottom: 1rem;
         }
-        .job-image {
-          width: 100%; height: 100%; object-fit: cover;
-        }
-        /* UPDATED: Elegant, geometric placeholder */
+        .job-image { width: 100%; height: 100%; object-fit: cover; }
         .job-image-placeholder {
-          width: 100%; height: 100%;
-          display: flex; align-items: center; justify-content: center;
-          background: linear-gradient(135deg, #09090c 0%, #010101 100%);
+          width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f9fafb;
         }
         .job-image-placeholder span {
-          font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.1em; color: rgba(255,255,255,0.15);
-          background: rgba(255,255,255,0.02); padding: 0.3rem 0.6rem; border-radius: 4px;
+          font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af;
         }
         .job-image-count {
-          position: absolute; bottom: 0.5rem; right: 0.5rem;
-          background: rgba(0,0,0,0.85); color: #fff;
-          font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.4rem; border-radius: 4px;
+          position: absolute; bottom: 0.4rem; right: 0.4rem; background: rgba(17, 24, 39, 0.8); color: #fff; font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.35rem; border-radius: 3px;
         }
 
-        .job-content-wrap {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        .job-top {
-          display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 0.5rem;
-        }
-        /* UPDATED: Futuristic accent cyan */
-        .job-cat {
-          font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.05em; color: #4fd1c5;
-        }
-        .job-time { font-size: 0.72rem; color: rgba(255,255,255,0.25); }
+        .job-content-wrap { flex: 1; display: flex; flex-direction: column; }
+        .job-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
+        .job-cat { font-size: 0.7rem; font-weight: 600; color: #6b7280; text-transform: uppercase; }
+        .job-time { font-size: 0.72rem; color: #9ca3af; }
         
         .job-title {
-          font-size: 1.1rem; font-weight: 700; color: #fff;
-          margin: 0 0 0.5rem; line-height: 1.4;
-          display: -webkit-box; -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical; overflow: hidden;
+          font-size: 1.05rem; font-weight: 600; color: #111827; margin: 0 0 0.4rem; line-height: 1.4;
+          display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
         }
         .job-desc {
-          font-size: 0.85rem; color: rgba(255,255,255,0.4); line-height: 1.5;
-          margin: 0 0 1rem;
-          display: -webkit-box; -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical; overflow: hidden;
+          font-size: 0.85rem; color: #4b5563; line-height: 1.5; margin: 0 0 1rem;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
 
-        .job-skills {
-          display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 1.25rem;
-        }
+        .job-skills { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1rem; }
         .skill-tag {
-          /* UPDATED: Muted tags */
-          background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04);
-          border-radius: 4px; padding: 0.15rem 0.45rem;
-          font-size: 0.7rem; color: rgba(255,255,255,0.35);
+          background: #f3f4f6; border-radius: 4px; padding: 0.15rem 0.4rem; font-size: 0.68rem; color: #4b5563; font-weight: 500;
         }
 
         .job-bottom {
-          margin-top: auto;
-          display: flex; align-items: flex-end; justify-content: space-between;
-          border-top: 1px solid rgba(255, 255, 255, 0.03);
-          padding-top: 0.85rem;
+          margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; border-top: 1px solid #f3f4f6; padding-top: 0.75rem;
         }
-        .job-tags {
-          display: flex; flex-direction: column; gap: 0.25rem;
-        }
+        .job-tags { display: flex; flex-direction: column; gap: 0.2rem; }
         .tag-modalidad { font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-        .tag-loc { font-size: 0.75rem; color: rgba(255,255,255,0.35); }
+        .tag-loc { font-size: 0.75rem; color: #6b7280; }
         
         .job-budget { text-align: right; }
-        /* UPDATED: Sharp White and Mono Font for Budget */
-        .budget-amount { font-size: 1.1rem; font-weight: 800; color: #fff; display: block; font-family: 'DM Mono', monospace; }
-        .budget-method { font-size: 0.68rem; color: rgba(255,255,255,0.25); text-transform: uppercase; }
+        .budget-amount { font-size: 1.05rem; font-weight: 700; color: #111827; display: block; }
+        .budget-method { font-size: 0.68rem; color: #9ca3af; text-transform: uppercase; font-weight: 500; }
 
         /* ACCION VER PERFIL */
         .job-card-footer-action {
-          background: rgba(255,255,255,0.005);
-          border-top: 1px solid rgba(255,255,255,0.02);
-          padding: 0.65rem 1.25rem;
-          text-align: center;
+          background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 0.6rem 1.25rem; text-align: left;
         }
         .view-profile-link {
-          text-decoration: none; font-size: 0.75rem; color: rgba(255,255,255,0.3);
-          font-weight: 500; transition: color 0.15s;
+          text-decoration: none; font-size: 0.75rem; color: #6b7280; font-weight: 500; transition: color 0.1s;
         }
-        /* UPDATED: Link glow interaction */
-        .job-card-wrapper:hover .view-profile-link {
-          color: #4fd1c5; text-shadow: 0 0 5px rgba(79,209,197,0.3);
-        }
+        .job-card-wrapper:hover .view-profile-link { color: #111827; }
 
         /* EMPTY & LOADING */
         .empty { text-align: center; padding: 5rem 1rem; }
-        .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.2; }
-        .empty h3 { font-size: 1.2rem; font-weight: 700; margin: 0 0 0.5rem; color: rgba(255,255,255,0.7); }
-        .empty p { color: rgba(255,255,255,0.3); font-size: 0.9rem; margin: 0 0 1.5rem; }
+        .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .empty h3 { font-size: 1.15rem; font-weight: 600; margin: 0 0 0.4rem; color: #111827; }
+        .empty p { color: #6b7280; font-size: 0.9rem; margin: 0 0 1.25rem; }
         
-        /* UPDATED: Strong blue CTA */
         .btn-primary {
-          background: #2b6cb0; color: #fff; text-decoration: none;
-          border-radius: 10px; padding: 0.75rem 1.5rem;
-          font-size: 0.9rem; font-weight: 700; display: inline-block;
-          transition: background 0.2s;
+          background: #111827; color: #fff; text-decoration: none; border-radius: 6px; padding: 0.6rem 1.25rem; font-size: 0.88rem; font-weight: 500; display: inline-block; transition: background 0.15s;
         }
-        .btn-primary:hover { background: #3182ce; }
+        .btn-primary:hover { background: #1f2937; }
 
-        .loading-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 1.75rem;
-        }
+        .loading-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
         .skeleton {
-          height: 320px; background: #060608;
-          border: 1px solid rgba(255,255,255,0.03);
-          border-radius: 14px;
-          animation: pulse 1.5s ease-in-out infinite;
+          height: 300px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; animation: pulse 1.5s ease-in-out infinite;
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.2; }
-        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         @media (max-width: 640px) {
           .nav-link { display: none; }
-          .header-title { font-size: 1.6rem; }
+          .header-title { font-size: 1.5rem; }
           .user-email { display: none; }
           .jobs-grid { grid-template-columns: 1fr; }
         }
