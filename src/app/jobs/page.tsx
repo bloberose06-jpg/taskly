@@ -331,10 +331,11 @@ export default function JobsPage() {
         .btn-post:hover { background: rgba(255,200,0,0.08); }
 
         /* JOB CARDS GRID (ESTILO DE CAJAS SEPARADAS) */
-        .jobs-grid { 
-          display: flex; 
-          flex-direction: column; 
-          gap: 1.25rem; /* Espaciado real y claro entre tarjetas */
+        .jobs-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+          gap: 1.5rem;
+          align-items: stretch;
         }
         
         .job-card {
