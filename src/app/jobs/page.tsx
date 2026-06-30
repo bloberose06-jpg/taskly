@@ -92,12 +92,14 @@ export default function JobsPage() {
                 <NotificationBell />
               </>
             ) : (
-              <Link href="/login" className="nav-link">Iniciar sesión</Link>
+              <Link href="/login" className="nav-link">
+                Iniciar sesión
+              </Link>
             )}
-            <Link href="/dashboard" className="btn-nav">Publicar trabajo</Link>
-          </div>
-            
-            <NotificationBell />
+      
+            <Link href="/dashboard" className="btn-nav">
+              Publicar trabajo
+            </Link>
           </div>
         </div>
       </nav>
