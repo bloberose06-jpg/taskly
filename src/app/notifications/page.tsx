@@ -113,7 +113,7 @@ export default function NotificationsPage() {
     if (action === 'aceptado' && notif.job_id) {
       await supabase
         .from('jobs')
-        .update({ estado: 'en progreso' })
+        .update({ estado: 'activo' })
         .eq('id', notif.job_id)
     }
 
