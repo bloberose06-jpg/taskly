@@ -199,7 +199,7 @@ export default function HomePage() {
         .nav-links { display: flex; align-items: center; gap: 1.5rem; }
         .nav-link { color: rgba(255,255,255,0.55); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
         .nav-link:hover { color: #cdcfd4; }
-        .btn-nav { background: #ffc800; color: #0a0a0f; text-decoration: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 700; transition: background 0.2s; }
+        .btn-nav { background: #ffc800; color: #e3e3e6; text-decoration: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 700; transition: background 0.2s; }
         .btn-nav:hover { background: #ffd700; }
         .user-pill { display: flex; align-items: center; gap: 0.5rem; background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.2); border-radius: 999px; padding: 0.35rem 0.75rem 0.35rem 0.35rem; text-decoration: none; transition: background 0.2s; }
         .user-pill:hover { background: rgba(255,200,0,0.15); }
