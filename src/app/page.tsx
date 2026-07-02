@@ -211,7 +211,7 @@ export default function HomePage() {
         .user-pill { display: flex; align-items: center; gap: 0.5rem; background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.2); border-radius: 999px; padding: 0.35rem 0.75rem 0.35rem 0.35rem; text-decoration: none; transition: background 0.2s; }
         .user-pill:hover { background: rgba(255,200,0,0.15); }
         .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: #ffc800; color: #0a0a0f; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
-        .user-email { font-size: 0.8rem; color: rgba(255,255,255,0.6); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-email { font-size: 0.8rem; color: #1f2937; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         /* HERO */
         .hero { padding: 6rem 1.5rem 5rem; background-image: radial-gradient(ellipse at 20% 50%, rgba(255,200,0,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(255,100,0,0.05) 0%, transparent 50%); }
