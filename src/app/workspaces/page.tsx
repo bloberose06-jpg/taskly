@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import type { Job } from '@/types'
 import ReviewForm from '@/components/ReviewForm'
+console.log("Supabase Client:", supabase)
 
 const MODALIDAD_COLORS: Record<string, string> = {
   Remoto: '#4ade80',
@@ -39,13 +40,43 @@ export default function JobDetailPage() {
   const [showForm,       setShowForm]       = useState(false)
 
   useEffect(() => {
-    if (!id) return
-    supabase.auth.getUser().then(({ data }) => {
+  console.log("========== WORKSPACES PAGE ==========")
+  console.log("Page mounted")
+
+  const load = async () => {
+    try {
+      console.log("Getting authenticated user...")
+
+      const { data, error } = await supabase.auth.getUser()
+
+      console.log("getUser data:", data)
+      console.log("getUser error:", error)
+
+      if (error) {
+        console.error("Auth Error:", error)
+        return
+      }
+
+      if (!data.user) {
+        console.log("No authenticated user. Redirecting to login...")
+        router.push("/login")
+        return
+      }
+
+      console.log("Authenticated user:", data.user.id)
+
       setUser(data.user)
-      if (data.user) checkApplication(data.user.id)
-    })
-    fetchJob()
-  }, [id])
+
+      await fetchWorkspaces(data.user.id)
+
+      console.log("Finished loading workspaces")
+    } catch (err) {
+      console.error("LOAD ERROR:", err)
+    }
+  }
+
+  load()
+}, [router])
 
   const fetchJob = async () => {
     setLoading(true)
