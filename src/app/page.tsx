@@ -185,9 +185,9 @@ export default function HomePage() {
 
         .page {
           min-height: 100vh;
-          background: #0a0a0f;
-          color: #fff;
-          font-family: 'DM Sans', 'Segoe UI', sans-serif;
+          background: #f8f9fa;
+          color: #1a1a24;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         /* NAV */
