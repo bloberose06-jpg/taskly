@@ -191,7 +191,14 @@ export default function HomePage() {
         }
 
         /* NAV */
-        .nav { position: sticky; top: 0; z-index: 100; background: rgba(10,10,15,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .nav {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          background: #ffffff;
+          border-bottom: 1px solid #e5e7eb;
+          backdrop-filter: blur(12px);
+        }
         .nav-inner { max-width: 1100px; margin: 0 auto; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
         .logo { display: flex; align-items: center; gap: 0.4rem; text-decoration: none; }
         .logo-icon { font-size: 1.4rem; }
