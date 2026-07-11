@@ -161,7 +161,10 @@ export default function WorkspacesPage() {
             <>
               {/* TRABAJOS ACEPTADOS (como aplicante) */}
               <section className="section">
-                <h2 className="section-title">Trabajos donde fuiste aceptado</h2>
+                <div className="section-header">
+                  <h2 className="section-title">Trabajos donde fuiste aceptado</h2>
+                  <span className="section-count">{acceptedJobs.length}</span>
+                </div>
                 {acceptedJobs.length === 0 ? (
                   <div className="empty">
                     <p>Aún no te han aceptado en ningún trabajo.</p>
@@ -178,17 +181,23 @@ export default function WorkspacesPage() {
                         <h3 className="job-title">{job.titulo}</h3>
                         <div className="job-tags-row">
                           <span
-                            className="tag-modalidad"
-                            style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}
+                            className="pill pill-modalidad"
+                            style={{
+                              color: MODALIDAD_COLORS[job.modalidad] || '#fff',
+                              borderColor: `${MODALIDAD_COLORS[job.modalidad] || '#fff'}33`,
+                              background: `${MODALIDAD_COLORS[job.modalidad] || '#fff'}14`,
+                            }}
                           >
                             ● {job.modalidad}
                           </span>
-                          <span className="tag-status accepted">✅ Aceptado</span>
+                          <span className="pill pill-status accepted">✅ Aceptado</span>
                         </div>
-                        <div className="job-budget">
-                          {job.moneda} {Number(job.presupuesto).toLocaleString('es-GT')}
+                        <div className="job-footer">
+                          <div className="job-budget">
+                            {job.moneda} {Number(job.presupuesto).toLocaleString('es-GT')}
+                          </div>
+                          <span className="job-cta">Ir al workspace →</span>
                         </div>
-                        <span className="job-cta">Ir al workspace →</span>
                       </Link>
                     ))}
                   </div>
@@ -197,7 +206,10 @@ export default function WorkspacesPage() {
 
               {/* TRABAJOS PUBLICADOS (como cliente) */}
               <section className="section">
-                <h2 className="section-title">Trabajos que publicaste</h2>
+                <div className="section-header">
+                  <h2 className="section-title">Trabajos que publicaste</h2>
+                  <span className="section-count">{ownedJobs.length}</span>
+                </div>
                 {ownedJobs.length === 0 ? (
                   <div className="empty">
                     <p>Todavía no has publicado ningún trabajo.</p>
@@ -214,17 +226,23 @@ export default function WorkspacesPage() {
                         <h3 className="job-title">{job.titulo}</h3>
                         <div className="job-tags-row">
                           <span
-                            className="tag-modalidad"
-                            style={{ color: MODALIDAD_COLORS[job.modalidad] || '#fff' }}
+                            className="pill pill-modalidad"
+                            style={{
+                              color: MODALIDAD_COLORS[job.modalidad] || '#fff',
+                              borderColor: `${MODALIDAD_COLORS[job.modalidad] || '#fff'}33`,
+                              background: `${MODALIDAD_COLORS[job.modalidad] || '#fff'}14`,
+                            }}
                           >
                             ● {job.modalidad}
                           </span>
-                          <span className={`tag-status estado-${job.estado}`}>{job.estado}</span>
+                          <span className={`pill pill-status estado-${job.estado}`}>{job.estado}</span>
                         </div>
-                        <div className="job-budget">
-                          {job.moneda} {Number(job.presupuesto).toLocaleString('es-GT')}
+                        <div className="job-footer">
+                          <div className="job-budget">
+                            {job.moneda} {Number(job.presupuesto).toLocaleString('es-GT')}
+                          </div>
+                          <span className="job-cta">Ver detalles →</span>
                         </div>
-                        <span className="job-cta">Ver detalles →</span>
                       </Link>
                     ))}
                   </div>
@@ -251,39 +269,66 @@ export default function WorkspacesPage() {
         .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: #ffc800; color: #0a0a0f; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; justify-content: center; }
         .user-email { font-size: 0.8rem; color: rgba(255,255,255,0.6); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .content { padding: 2rem 1.5rem 5rem; }
+        .content { padding: 2.5rem 1.5rem 6rem; }
         .content-inner { max-width: 1100px; margin: 0 auto; }
-        .back-link { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 1rem; }
+        .back-link { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 1.25rem; }
         .back-link:hover { color: #fff; }
-        .page-title { font-size: 1.75rem; font-weight: 800; margin: 0 0 2rem; }
+        .page-title { font-size: 1.85rem; font-weight: 800; margin: 0 0 2.5rem; letter-spacing: -0.01em; }
 
         .error-banner { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #f87171; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.85rem; margin-bottom: 1.5rem; }
 
-        .section { margin-bottom: 3rem; }
-        .section-title { font-size: 1.1rem; font-weight: 700; margin: 0 0 1.25rem; color: rgba(255,255,255,0.85); }
+        /* SECCIONES: separación clara con línea superior + espacio generoso */
+        .section { margin-bottom: 0; padding: 2rem 0; }
+        .section:first-of-type { padding-top: 0; }
+        .section + .section { border-top: 1px solid rgba(255,255,255,0.07); }
 
-        .jobs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
-        .job-card { background: #13131a; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 1.25rem; text-decoration: none; color: inherit; display: flex; flex-direction: column; gap: 0.6rem; transition: border-color 0.2s, transform 0.15s; }
-        .job-card:hover { border-color: rgba(255,200,0,0.3); transform: translateY(-2px); }
-        .job-top { display: flex; justify-content: space-between; font-size: 0.72rem; }
-        .job-cat { color: rgba(255,200,0,0.7); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+        .section-header { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 1.5rem; }
+        .section-title { font-size: 1.05rem; font-weight: 700; margin: 0; color: rgba(255,255,255,0.9); }
+        .section-count {
+          background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.45);
+          font-size: 0.75rem; font-weight: 700; min-width: 22px; height: 22px;
+          border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
+          padding: 0 0.4rem;
+        }
+
+        .jobs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.25rem; }
+        .job-card {
+          background: #13131a; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+          padding: 1.5rem; text-decoration: none; color: inherit;
+          display: flex; flex-direction: column; gap: 0.9rem;
+          transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+        .job-card:hover { border-color: rgba(255,200,0,0.35); transform: translateY(-3px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+
+        .job-top { display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; }
+        .job-cat { color: rgba(255,200,0,0.7); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
         .job-time { color: rgba(255,255,255,0.25); }
-        .job-title { font-size: 1rem; font-weight: 700; margin: 0; line-height: 1.4; }
-        .job-tags-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem; }
-        .tag-modalidad { font-weight: 600; }
-        .tag-status { color: rgba(255,255,255,0.4); text-transform: capitalize; }
-        .tag-status.accepted { color: #4ade80; }
-        .estado-abierto { color: #4ade80; }
-        .estado-cerrado { color: #f87171; }
-        .estado-completado { color: #ffc800; }
-        .estado-pausado { color: #facc15; }
-        .job-budget { font-size: 1.1rem; font-weight: 800; color: #ffc800; }
-        .job-cta { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: auto; }
+        .job-title { font-size: 1.05rem; font-weight: 700; margin: 0; line-height: 1.4; }
+
+        .job-tags-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+        .pill {
+          display: inline-flex; align-items: center; gap: 0.25rem;
+          font-size: 0.72rem; font-weight: 600; text-transform: capitalize;
+          padding: 0.3rem 0.65rem; border-radius: 999px; border: 1px solid transparent;
+        }
+        .pill-status { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+        .pill-status.accepted { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.25); color: #4ade80; }
+        .pill-status.estado-abierto { background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.25); color: #4ade80; }
+        .pill-status.estado-cerrado { background: rgba(248,113,113,0.1); border-color: rgba(248,113,113,0.25); color: #f87171; }
+        .pill-status.estado-completado { background: rgba(255,200,0,0.1); border-color: rgba(255,200,0,0.25); color: #ffc800; }
+        .pill-status.estado-pausado { background: rgba(250,204,21,0.1); border-color: rgba(250,204,21,0.25); color: #facc15; }
+
+        .job-footer {
+          margin-top: auto; padding-top: 0.9rem; border-top: 1px solid rgba(255,255,255,0.06);
+          display: flex; align-items: center; justify-content: space-between;
+        }
+        .job-budget { font-size: 1.15rem; font-weight: 800; color: #ffc800; }
+        .job-cta { font-size: 0.76rem; color: rgba(255,255,255,0.35); transition: color 0.2s; }
         .job-card:hover .job-cta { color: #ffc800; }
 
-        .empty { background: #13131a; border: 1px dashed rgba(255,255,255,0.1); border-radius: 14px; padding: 2rem; text-align: center; }
-        .empty p { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0 0 1rem; }
-        .btn-secondary { display: inline-block; background: rgba(255,200,0,0.1); border: 1px solid rgba(255,200,0,0.25); color: #ffc800; text-decoration: none; border-radius: 8px; padding: 0.55rem 1.1rem; font-size: 0.85rem; font-weight: 600; }
+        .empty { background: #13131a; border: 1px dashed rgba(255,255,255,0.12); border-radius: 16px; padding: 2.5rem 2rem; text-align: center; }
+        .empty p { color: rgba(255,255,255,0.4); font-size: 0.9rem; margin: 0 0 1.1rem; }
+        .btn-secondary { display: inline-block; background: rgba(255,200,0,0.1); border: 1px solid rgba(255,200,0,0.25); color: #ffc800; text-decoration: none; border-radius: 8px; padding: 0.55rem 1.1rem; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
         .btn-secondary:hover { background: rgba(255,200,0,0.18); }
 
         .skeleton-wrap { display: flex; flex-direction: column; gap: 1rem; }
