@@ -9,8 +9,10 @@ import type { Metadata } from "next";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { Analytics } from "@vercel/analytics/next";
 // import { Geist, Geist_Mono } from "next/font/google";  // ← mantené tus fuentes
 import "./globals.css";
+
 
 export const metadata: Metadata = {
   title: "Taskly",
@@ -28,6 +30,7 @@ export default function RootLayout({
         {/* Plugin de SSR para UploadThing — evita el estado de carga */}
         <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
         {children}
+        <Analytics />
       </body>
     </html>
   );
