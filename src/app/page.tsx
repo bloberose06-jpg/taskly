@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 
 const CATEGORIAS = [
-  { icon: '💻', name: 'Desarrollo web' }, 
   { icon: '🔨', name: 'Pequeñas reparaciones' },
   { icon: '🌱', name: 'Jardinería y patios' },
   { icon: '💪', name: 'Fuerza y mudanzas' },
   { icon: '🧹', name: 'Limpieza del hogar' },
-  { icon: '🎬', name: 'Video y animación' },
+  { icon: '💻', name: 'Desarrollo web' }, 
+  { icon: '🚗', name: 'Lavado de autos' },
   { icon: '📊', name: 'Contabilidad y finanzas' },
   { icon: '🏗️', name: 'Arquitectura e ingeniería' },
   { icon: '🐶', name: 'Cuidado de mascotas' },
