@@ -5,19 +5,21 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 
 const CATEGORIAS = [
-  { icon: '💻', name: 'Desarrollo web' },
-  { icon: '📱', name: 'Desarrollo móvil' },
-  { icon: '🎨', name: 'Diseño gráfico' },
-  { icon: '📈', name: 'Marketing digital' },
-  { icon: '✍️', name: 'Redacción y traducción' },
+  { icon: '💻', name: 'Desarrollo web' }, 
+  { icon: '🔨', name: 'Pequeñas reparaciones' },
+  { icon: '🌱', name: 'Jardinería y patios' },
+  { icon: '💪', name: 'Fuerza y mudanzas' },
+  { icon: '🧹', name: 'Limpieza del hogar' },
   { icon: '🎬', name: 'Video y animación' },
   { icon: '📊', name: 'Contabilidad y finanzas' },
   { icon: '🏗️', name: 'Arquitectura e ingeniería' },
+  { icon: '🐶', name: 'Cuidado de mascotas' },
+   
 ]
 
 const STATS = [
-  { value: '2,400+', label: 'Trabajos publicados' },
-  { value: '1,800+', label: 'Freelancers activos' },
+  { value: '100+', label: 'Trabajos publicados' },
+  { value: '30+', label: 'Trabajadores activos' },
   { value: 'GTQ',    label: 'Pagos en quetzales' },
 ]
 
@@ -65,11 +67,11 @@ export default function HomePage() {
         <div className="hero-inner">
           <div className="hero-badge">🇬🇹 Hecho para Guatemala</div>
           <h1 className="hero-title">
-            Encuentra el talento<br />
-            <span className="hero-accent">que tu proyecto necesita</span>
+            Encuentra la ayuda que necesitas <br />
+            <span className="hero-accent">en tu zona</span>
           </h1>
           <p className="hero-sub">
-            Publica trabajos, contrata freelancers y paga en quetzales.<br />
+            Publica tareas, contrata ayuda local y paga en quetzales.<br />
             Simple, rápido y sin complicaciones.
           </p>
           <div className="hero-cta">
