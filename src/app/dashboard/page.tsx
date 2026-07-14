@@ -8,20 +8,16 @@ import NotificationBell from '@/components/NotificationBell'
 import JobImageUpload from '@/components/JobImageUpload'
 
 const CATEGORIAS = [
-  'Diseño gráfico',
+  'Pequeñas reparaciones',
+  'Jardinería y patios',
+  'Fuerza y mudanzas',
+  'Limpieza del hogar',
   'Desarrollo web',
-  'Desarrollo móvil',
-  'Marketing digital',
-  'Redacción y traducción',
-  'Video y animación',
-  'Fotografía',
+  'Lavado de autos',
   'Contabilidad y finanzas',
-  'Soporte técnico',
-  'Consultoría',
   'Arquitectura e ingeniería',
-  'Educación y tutorías',
-  'Ventas',
-  'Otro',
+  'Cuidado de mascotas'
+  'Otro'
 ]
 
 const MODALIDADES = ['Remoto', 'Presencial', 'Híbrido']
