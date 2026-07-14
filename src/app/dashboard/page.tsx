@@ -16,7 +16,7 @@ const CATEGORIAS = [
   'Lavado de autos',
   'Contabilidad y finanzas',
   'Arquitectura e ingeniería',
-  'Cuidado de mascotas'
+  'Cuidado de mascotas',
   'Otro'
 ]
 
